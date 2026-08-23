@@ -5,7 +5,8 @@ import { fetchRecordings, fetchRecordingById, reExtractRecording } from '../lib/
 import { WaveformPlayer } from '../components/WaveformPlayer';
 import { TranscriptViewer } from '../components/TranscriptViewer';
 import { EntityInspector } from '../components/EntityInspector';
-import { Radio, Sparkles, Search, Filter } from 'lucide-react';
+import { AudioExportAnalyticsModal } from '../components/AudioExportAnalyticsModal';
+import { Radio, Sparkles, Search, Filter, Activity, Download } from 'lucide-react';
 
 export const StudioPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -13,6 +14,7 @@ export const StudioPage: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sentimentFilter, setSentimentFilter] = useState<'ALL' | 'POSITIVE' | 'NEUTRAL' | 'URGENT'>('ALL');
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
 
   const recordingIdFromUrl = searchParams.get('id');
 
@@ -136,6 +138,18 @@ export const StudioPage: React.FC = () => {
               })
             )}
           </select>
+
+          {/* Speech Analytics & Export Button */}
+          {activeRecording && (
+            <button
+              onClick={() => setIsAnalyticsOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-750 hover:border-cyan-500 text-slate-300 hover:text-cyan-400 text-xs font-semibold transition"
+              title="Speech Analytics & Audio Download"
+            >
+              <Activity className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Speech Analytics</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -180,6 +194,15 @@ export const StudioPage: React.FC = () => {
             />
           </div>
         </div>
+      )}
+
+      {/* Audio Export & Speech Analytics Modal */}
+      {activeRecording && (
+        <AudioExportAnalyticsModal
+          isOpen={isAnalyticsOpen}
+          onClose={() => setIsAnalyticsOpen(false)}
+          recording={activeRecording}
+        />
       )}
     </div>
   );

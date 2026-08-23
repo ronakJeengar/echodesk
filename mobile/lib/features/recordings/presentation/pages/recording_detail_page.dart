@@ -11,6 +11,7 @@ import '../widgets/send_invoice_modal.dart';
 import '../widgets/signature_modal.dart';
 import '../../../customers/presentation/widgets/follow_up_composer_sheet.dart';
 import '../../../safety/presentation/widgets/safety_audit_sheet.dart';
+import '../widgets/speech_analytics_sheet.dart';
 
 final recordingDetailFutureProvider =
     FutureProvider.autoDispose.family<RecordingModel?, String>((ref, recordingId) async {
@@ -776,6 +777,27 @@ class _RecordingDetailPageState extends ConsumerState<RecordingDetailPage> {
                     ),
                   ],
                 ),
+
+                const SizedBox(height: 10),
+
+                // Speech Analytics & Audio Export Button
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => SpeechAnalyticsSheet.show(context, recording),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.border, width: 1),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    icon: const Icon(Icons.analytics_outlined, size: 18, color: AppColors.primaryLight),
+                    label: Text(
+                      'Speech Telemetry & Audio Master',
+                      style: AppTypography.button.copyWith(color: AppColors.textPrimary),
+                    ),
+                  ),
+                ),
+
                 const SizedBox(height: 32),
               ],
             ],
