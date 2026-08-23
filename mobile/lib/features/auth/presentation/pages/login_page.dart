@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../providers/auth_provider.dart';
+import '../../../../core/widgets/echo_logo.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -83,37 +84,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Logo
-                  Center(
-                    child: Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryGlow,
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.6), width: 1.5),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.2),
-                            blurRadius: 20,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: const Icon(Icons.graphic_eq_rounded, color: AppColors.primary, size: 36),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  Text(
-                    'EchoDesk',
-                    style: AppTypography.h1.copyWith(letterSpacing: -0.5),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'AI Voice Agent & Field Operations CRM',
-                    style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
-                    textAlign: TextAlign.center,
+                  const Center(
+                    child: EchoLogo(size: LogoSize.large, showTagline: true),
                   ),
                   const SizedBox(height: 24),
 

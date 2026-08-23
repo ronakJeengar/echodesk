@@ -8,13 +8,14 @@ import '../../features/jobs/presentation/pages/jobs_page.dart';
 import '../../features/recordings/presentation/pages/record_voice_page.dart';
 import '../../features/recordings/presentation/pages/recording_detail_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/splash/presentation/pages/splash_screen.dart';
 import '../widgets/app_shell.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final GoRouter appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: '/login',
+  initialLocation: '/splash',
   routes: [
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
@@ -104,6 +105,13 @@ final GoRouter appRouter = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       pageBuilder: (context, state) => const MaterialPage(
         child: LoginPage(),
+      ),
+    ),
+    GoRoute(
+      path: '/splash',
+      parentNavigatorKey: _rootNavigatorKey,
+      pageBuilder: (context, state) => const MaterialPage(
+        child: SplashScreen(),
       ),
     ),
   ],

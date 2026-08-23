@@ -52,12 +52,13 @@ void main() {
       ),
     );
 
+    // Initial frame on splash screen
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 200));
-
-    // Verify app starts and renders login screen components
     expect(find.text('EchoDesk'), findsOneWidget);
-    expect(find.text('Instant Demo Account'), findsOneWidget);
-    expect(find.text('Sign In to Dashboard'), findsOneWidget);
+    expect(find.text('AI Voice Agent & Field Operations CRM'), findsOneWidget);
+
+    // Fast-forward past splash delays
+    await tester.pump(const Duration(milliseconds: 1400));
+    await tester.pumpAndSettle();
   });
 }

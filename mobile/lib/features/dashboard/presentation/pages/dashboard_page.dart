@@ -10,6 +10,7 @@ import '../../../notifications/presentation/widgets/notifications_sheet.dart';
 import '../../../technicians/presentation/widgets/technicians_roster_sheet.dart';
 import '../../../calculators/presentation/widgets/trade_calculators_sheet.dart';
 import '../../../equipment/presentation/widgets/equipment_decoder_sheet.dart';
+import '../../../../core/widgets/echo_logo.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -25,23 +26,7 @@ class DashboardPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: AppColors.primaryGlow,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.5)),
-              ),
-              child: const Icon(Icons.graphic_eq_rounded, color: AppColors.primary, size: 16),
-            ),
-            const SizedBox(width: 8),
-            Text('EchoDesk', style: AppTypography.h3),
-          ],
-        ),
+        title: const EchoLogo(size: LogoSize.small),
         actions: [
           IconButton(
             icon: Stack(
