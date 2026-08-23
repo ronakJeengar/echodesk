@@ -215,8 +215,17 @@ class _EquipmentDecoderSheetState extends State<EquipmentDecoderSheet> {
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Text('$_brand ${data['type']}', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
+                          Expanded(
+                            child: Text(
+                              '$_brand ${data['type']}',
+                              style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
@@ -279,13 +288,22 @@ class _EquipmentDecoderSheetState extends State<EquipmentDecoderSheet> {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: AppTypography.caption.copyWith(color: AppColors.textSecondary)),
-          Text(
-            value,
-            style: AppTypography.bodyMedium.copyWith(
-              fontWeight: FontWeight.bold,
-              color: isHighlight ? AppColors.primary : AppColors.textPrimary,
+          Expanded(
+            flex: 2,
+            child: Text(label, style: AppTypography.caption.copyWith(color: AppColors.textSecondary)),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: AppTypography.bodyMedium.copyWith(
+                fontWeight: FontWeight.bold,
+                color: isHighlight ? AppColors.primary : AppColors.textPrimary,
+              ),
             ),
           ),
         ],

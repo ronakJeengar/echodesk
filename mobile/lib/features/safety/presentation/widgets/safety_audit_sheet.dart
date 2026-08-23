@@ -197,24 +197,35 @@ class _SafetyAuditSheetState extends State<SafetyAuditSheet> {
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(4),
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary.withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        item['standard']!,
+                                        style: AppTypography.caption.copyWith(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 10),
+                                      ),
                                     ),
-                                    child: Text(
-                                      item['standard']!,
-                                      style: AppTypography.caption.copyWith(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 10),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        item['title']!,
+                                        style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(item['title']!, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
-                                ],
+                                  ],
+                                ),
                               ),
+                              const SizedBox(width: 8),
                               Icon(
                                 isPassed ? Icons.check_circle_rounded : Icons.info_outline_rounded,
                                 color: isPassed ? AppColors.success : AppColors.warning,
