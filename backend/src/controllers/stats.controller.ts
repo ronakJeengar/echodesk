@@ -33,4 +33,19 @@ export class StatsController {
       next(error);
     }
   }
+
+  static async getNotifications(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const workspaceId = req.workspaceId;
+      if (!workspaceId) throw new AppError('Workspace context is required', 400);
+
+      const notifications = await CRMService.getNotificationsFeed(workspaceId);
+      res.status(200).json({
+        success: true,
+        data: notifications,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

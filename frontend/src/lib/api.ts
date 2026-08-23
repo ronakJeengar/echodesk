@@ -208,3 +208,21 @@ export const seedDemoData = async (): Promise<{
   const res = await api.post('/workspaces/seed-demo');
   return res.data;
 };
+
+export interface AppNotification {
+  id: string;
+  type: 'AI_PROCESSED' | 'INVOICE_SENT' | 'SIGNATURE_CAPTURED' | 'TASK_REMINDER' | 'ACTIVITY';
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+  link?: string;
+}
+
+export const fetchNotifications = async (): Promise<{
+  notifications: AppNotification[];
+  unreadCount: number;
+}> => {
+  const res = await api.get('/stats/notifications');
+  return res.data.data;
+};

@@ -8,3 +8,4 @@ statsRouter.use(authenticate);
 
 statsRouter.get('/', StatsController.getStats);
 statsRouter.get('/analytics', StatsController.getAnalytics);
+statsRouter.get('/notifications', StatsController.getNotifications);

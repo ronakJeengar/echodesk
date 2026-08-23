@@ -5,6 +5,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../providers/dashboard_provider.dart';
 import '../../../recordings/presentation/providers/offline_sync_provider.dart';
+import '../../../notifications/data/notifications_repository.dart';
+import '../../../notifications/presentation/widgets/notifications_sheet.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -13,7 +15,9 @@ class DashboardPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(dashboardStatsProvider);
     final pendingOfflineAsync = ref.watch(pendingRecordingsProvider);
+    final notifsAsync = ref.watch(notificationsFutureProvider);
     final isSyncing = ref.watch(offlineSyncProvider);
+    final unreadNotifs = notifsAsync.value?['unreadCount'] as int? ?? 0;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -36,10 +40,33 @@ class DashboardPage extends ConsumerWidget {
         ),
         actions: [
           IconButton(
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(Icons.notifications_none_rounded, color: AppColors.textSecondary),
+                if (unreadNotifs > 0)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(minWidth: 8, minHeight: 8),
+                    ),
+                  ),
+              ],
+            ),
+            onPressed: () => NotificationsSheet.show(context),
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh_rounded, color: AppColors.textSecondary),
             onPressed: () {
               ref.invalidate(dashboardStatsProvider);
               ref.invalidate(pendingRecordingsProvider);
+              ref.invalidate(notificationsFutureProvider);
             },
           ),
           const SizedBox(width: 8),

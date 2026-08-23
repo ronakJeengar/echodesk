@@ -1,6 +1,6 @@
 import { prisma } from '../database/prisma.js';
 import { AppError } from '../middlewares/error.middleware.js';
-import { JobStatus, Priority, TaskStatus } from '@prisma/client';
+import { JobStatus, Priority, TaskStatus, ProcessingStatus } from '@prisma/client';
 
 export class CRMService {
   // ==================== CUSTOMERS ====================
@@ -621,5 +621,98 @@ export class CRMService {
     });
 
     return [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+  }
+
+  static async getNotificationsFeed(workspaceId: string) {
+    const [recentLogs, recentRecordings, pendingTasks] = await Promise.all([
+      prisma.activityLog.findMany({
+        where: { user: { memberships: { some: { workspaceId } } } },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        include: { user: { select: { fullName: true } } },
+      }),
+      prisma.recording.findMany({
+        where: { workspaceId, status: ProcessingStatus.COMPLETED },
+        orderBy: { updatedAt: 'desc' },
+        take: 5,
+        include: { customer: true, extractedData: true },
+      }),
+      prisma.task.findMany({
+        where: { workspaceId, status: TaskStatus.TODO },
+        orderBy: { dueDate: 'asc' },
+        take: 5,
+        include: { customer: true },
+      }),
+    ]);
+
+    const notifications: Array<{
+      id: string;
+      type: 'AI_PROCESSED' | 'INVOICE_SENT' | 'SIGNATURE_CAPTURED' | 'TASK_REMINDER' | 'ACTIVITY';
+      title: string;
+      message: string;
+      timestamp: string;
+      read: boolean;
+      link?: string;
+    }> = [];
+
+    // Map recent recordings
+    for (const rec of recentRecordings) {
+      const custName = rec.customer?.name || (rec.extractedData as any)?.customerInfo?.name || 'Customer';
+      notifications.push({
+        id: `notif-rec-${rec.id}`,
+        type: 'AI_PROCESSED',
+        title: 'Voice Debrief Processed',
+        message: `AI extracted CRM entities and action items for ${custName} (${rec.audioDurationSec.toFixed(0)}s audio).`,
+        timestamp: rec.updatedAt.toISOString(),
+        read: false,
+        link: `/studio?id=${rec.id}`,
+      });
+    }
+
+    // Map activity logs
+    for (const log of recentLogs) {
+      if (log.action === 'SIGNATURE_CAPTURED') {
+        const meta = log.metadata as any;
+        notifications.push({
+          id: `notif-log-${log.id}`,
+          type: 'SIGNATURE_CAPTURED',
+          title: 'Digital Signature Captured',
+          message: `${meta?.signerName || 'Customer'} signed work order authorization.`,
+          timestamp: log.createdAt.toISOString(),
+          read: true,
+        });
+      } else if (log.action === 'INVOICE_SENT_TO_CUSTOMER') {
+        const meta = log.metadata as any;
+        notifications.push({
+          id: `notif-log-${log.id}`,
+          type: 'INVOICE_SENT',
+          title: 'Invoice Dispatched',
+          message: `Invoice sent to customer via ${meta?.deliveryMethod || 'Email'}.`,
+          timestamp: log.createdAt.toISOString(),
+          read: true,
+        });
+      }
+    }
+
+    // Map urgent tasks
+    for (const task of pendingTasks) {
+      notifications.push({
+        id: `notif-task-${task.id}`,
+        type: 'TASK_REMINDER',
+        title: 'Action Item Due',
+        message: `${task.title} for ${task.customer?.name || 'Client'}.`,
+        timestamp: task.createdAt.toISOString(),
+        read: false,
+        link: '/kanban',
+      });
+    }
+
+    // Sort by timestamp descending
+    notifications.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    return {
+      notifications,
+      unreadCount: notifications.filter((n) => !n.read).length,
+    };
   }
 }
