@@ -4,7 +4,7 @@ import { fetchJobs, fetchTasks, toggleTask } from '../lib/api';
 import { Job, Task, Recording } from '../types';
 import { WorkOrderPdfModal } from '../components/WorkOrderPdfModal';
 import { CreateJobModal } from '../components/CreateJobModal';
-import { Kanban, Calendar, Clock, DollarSign, CheckCircle2, User, AlertCircle, Printer, Plus } from 'lucide-react';
+import { Kanban, Calendar, Clock, DollarSign, CheckCircle2, User, AlertCircle, Printer, Plus, Download } from 'lucide-react';
 
 export const JobsKanbanPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -81,6 +81,24 @@ export const JobsKanbanPage: React.FC = () => {
     setPdfJobRecording(rec);
   };
 
+  const handleExportCsv = () => {
+    const token = localStorage.getItem('echodesk_token');
+    fetch('/api/v1/jobs/export/csv', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.blob())
+      .then((blob) => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `echodesk-jobs-${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      });
+  };
+
   const columns: Array<{ title: string; status: Job['status']; color: string }> = [
     { title: 'Scheduled & Dispatched', status: 'SCHEDULED', color: 'border-blue-500/40 text-blue-400' },
     { title: 'In Progress / On-Site', status: 'IN_PROGRESS', color: 'border-amber-500/40 text-amber-400' },
@@ -98,13 +116,23 @@ export const JobsKanbanPage: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => setIsCreateJobOpen(true)}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs shadow-lg shadow-emerald-500/20 shrink-0 transition"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Dispatch New Job</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportCsv}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-semibold text-xs shrink-0 transition"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Export CSV</span>
+          </button>
+
+          <button
+            onClick={() => setIsCreateJobOpen(true)}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs shadow-lg shadow-emerald-500/20 shrink-0 transition"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Dispatch New Job</span>
+          </button>
+        </div>
       </div>
 
       {/* Kanban Board */}

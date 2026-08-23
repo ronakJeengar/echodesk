@@ -545,4 +545,81 @@ export class CRMService {
       revenueTrends,
     };
   }
+
+  // ==================== CSV EXPORT ====================
+
+  static async exportJobsCsv(workspaceId: string): Promise<string> {
+    const jobs = await prisma.job.findMany({
+      where: { workspaceId },
+      include: { customer: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const headers = [
+      'Job ID',
+      'Title',
+      'Category',
+      'Status',
+      'Priority',
+      'Customer Name',
+      'Customer Email',
+      'Customer Phone',
+      'Quoted Amount ($)',
+      'Labor Hours',
+      'Created Date',
+    ];
+
+    const rows = jobs.map((j) => [
+      `"${j.id}"`,
+      `"${(j.title || '').replace(/"/g, '""')}"`,
+      `"${(j.category || 'General').replace(/"/g, '""')}"`,
+      `"${j.status}"`,
+      `"${j.priority}"`,
+      `"${(j.customer?.name || '').replace(/"/g, '""')}"`,
+      `"${(j.customer?.email || '').replace(/"/g, '""')}"`,
+      `"${(j.customer?.phone || '').replace(/"/g, '""')}"`,
+      j.quotedAmount ? Number(j.quotedAmount).toFixed(2) : '0.00',
+      j.laborHours ? Number(j.laborHours).toFixed(1) : '0.0',
+      `"${j.createdAt.toISOString()}"`,
+    ]);
+
+    return [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+  }
+
+  static async exportRecordingsCsv(workspaceId: string): Promise<string> {
+    const recordings = await prisma.recording.findMany({
+      where: { workspaceId },
+      include: { customer: true, extractedData: true },
+      orderBy: { recordedAt: 'desc' },
+    });
+
+    const headers = [
+      'Recording ID',
+      'Recorded At',
+      'Status',
+      'Duration (sec)',
+      'Customer Name',
+      'Executive Summary',
+      'Confidence Score (%)',
+      'Quoted Amount ($)',
+    ];
+
+    const rows = recordings.map((r) => {
+      const ext = r.extractedData;
+      const fin = ext?.financials as any;
+      const custInfo = ext?.customerInfo as any;
+      return [
+        `"${r.id}"`,
+        `"${r.recordedAt.toISOString()}"`,
+        `"${r.status}"`,
+        r.audioDurationSec ? r.audioDurationSec.toFixed(1) : '0.0',
+        `"${(r.customer?.name || custInfo?.name || '').replace(/"/g, '""')}"`,
+        `"${(ext?.executiveSummary || '').replace(/"/g, '""')}"`,
+        ext?.confidenceScore ? (ext.confidenceScore * 100).toFixed(0) : '0',
+        fin?.quotedAmount ? Number(fin.quotedAmount).toFixed(2) : '0.00',
+      ];
+    });
+
+    return [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+  }
 }

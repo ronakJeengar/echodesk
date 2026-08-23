@@ -12,6 +12,7 @@ export const jobsRouter = Router();
 jobsRouter.use(authenticate);
 
 jobsRouter.get('/', JobsController.list);
+jobsRouter.get('/export/csv', JobsController.exportCsv);
 jobsRouter.post('/', validate({ body: createJobSchema }), JobsController.create);
 jobsRouter.get('/:id', JobsController.getById);
 jobsRouter.patch('/:id', validate({ body: updateJobSchema }), JobsController.update);

@@ -35,6 +35,9 @@ class _RecordingDetailPageState extends ConsumerState<RecordingDetailPage> {
   PlayerState _playerState = PlayerState.stopped;
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
+  double _playbackRate = 1.0;
+
+  final List<double> _availableRates = const [0.75, 1.0, 1.25, 1.5, 2.0];
 
   @override
   void initState() {
@@ -279,6 +282,45 @@ class _RecordingDetailPageState extends ConsumerState<RecordingDetailPage> {
                           ),
                         ),
                       ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Playback Speed Controller Pills
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: _availableRates.map((rate) {
+                        final isSelected = _playbackRate == rate;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: GestureDetector(
+                            onTap: () async {
+                              setState(() => _playbackRate = rate);
+                              await _audioPlayer.setPlaybackRate(rate);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppColors.primary.withValues(alpha: 0.2)
+                                    : AppColors.surfaceElevated,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: isSelected ? AppColors.primary : AppColors.border,
+                                ),
+                              ),
+                              child: Text(
+                                '${rate}x',
+                                style: AppTypography.caption.copyWith(
+                                  color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ],
                 ),

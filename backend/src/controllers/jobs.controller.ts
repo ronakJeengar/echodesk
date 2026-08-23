@@ -91,4 +91,18 @@ export class JobsController {
       next(error);
     }
   }
+
+  static async exportCsv(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const workspaceId = req.workspaceId;
+      if (!workspaceId) throw new AppError('Workspace context is required', 400);
+
+      const csvData = await CRMService.exportJobsCsv(workspaceId);
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="echodesk-jobs-${Date.now()}.csv"`);
+      res.status(200).send(csvData);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
