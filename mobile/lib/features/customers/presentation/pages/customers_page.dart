@@ -22,11 +22,11 @@ class CustomersPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           // Search Input
-          TextField(
+          const TextField(
             decoration: InputDecoration(
               hintText: 'Search customers by name, phone, or tag...',
-              prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textMuted, size: 20),
-              suffixIcon: const Icon(Icons.tune_rounded, color: AppColors.textMuted, size: 18),
+              prefixIcon: Icon(Icons.search_rounded, color: AppColors.textMuted, size: 20),
+              suffixIcon: Icon(Icons.tune_rounded, color: AppColors.textMuted, size: 18),
             ),
           ),
           const SizedBox(height: 20),

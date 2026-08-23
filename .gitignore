@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+.dart_tool/
+
+# Environment files
+.env
+.env.local
+!.env.example
+
+# Build and distribution
+dist/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Media and uploads
+uploads/
+/tmp/
+
+# Logs
+*.log
+
+# OS & Editor
+.DS_Store
+.idea/
+.vscode/
+*.iml

@@ -260,7 +260,7 @@ class _RecordVoicePageState extends State<RecordVoicePage> with SingleTickerProv
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
                 color: _isRecording
-                    ? AppColors.recordingRed.withOpacity(0.2)
+                    ? AppColors.recordingRed.withValues(alpha: 0.2)
                     : AppColors.surfaceElevated,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
@@ -349,7 +349,7 @@ class _RecordVoicePageState extends State<RecordVoicePage> with SingleTickerProv
                           boxShadow: [
                             BoxShadow(
                               color: _isRecording
-                                  ? AppColors.recordingRed.withOpacity(0.4)
+                                  ? AppColors.recordingRed.withValues(alpha: 0.4)
                                   : AppColors.primaryGlow,
                               blurRadius: 28,
                               spreadRadius: 4,

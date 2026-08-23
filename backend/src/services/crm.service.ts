@@ -1,0 +1,431 @@
+import { prisma } from '../database/prisma.js';
+import { AppError } from '../middlewares/error.middleware.js';
+import { JobStatus, Priority, TaskStatus } from '@prisma/client';
+
+export class CRMService {
+  // ==================== CUSTOMERS ====================
+
+  static async listCustomers(
+    workspaceId: string,
+    params: { search?: string; page?: number; limit?: number } = {}
+  ) {
+    const page = Math.max(1, params.page || 1);
+    const limit = Math.min(100, Math.max(1, params.limit || 20));
+    const skip = (page - 1) * limit;
+
+    const where: any = { workspaceId };
+    if (params.search) {
+      where.OR = [
+        { name: { contains: params.search, mode: 'insensitive' } },
+        { companyName: { contains: params.search, mode: 'insensitive' } },
+        { phone: { contains: params.search } },
+        { email: { contains: params.search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [total, customers] = await Promise.all([
+      prisma.customer.count({ where }),
+      prisma.customer.findMany({
+        where,
+        include: {
+          _count: {
+            select: {
+              jobs: true,
+              recordings: true,
+              tasks: true,
+            },
+          },
+        },
+        orderBy: { updatedAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+    ]);
+
+    return {
+      customers,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  static async createCustomer(
+    workspaceId: string,
+    data: {
+      name: string;
+      companyName?: string;
+      email?: string;
+      phone?: string;
+      address?: string;
+      city?: string;
+      state?: string;
+      postalCode?: string;
+      notes?: string;
+      tags?: string[];
+    }
+  ) {
+    return await prisma.customer.create({
+      data: {
+        workspaceId,
+        ...data,
+      },
+    });
+  }
+
+  static async getCustomerById(workspaceId: string, customerId: string) {
+    const customer = await prisma.customer.findFirst({
+      where: { id: customerId, workspaceId },
+      include: {
+        jobs: { orderBy: { createdAt: 'desc' } },
+        recordings: {
+          include: { extractedData: true },
+          orderBy: { recordedAt: 'desc' },
+        },
+        tasks: { orderBy: { createdAt: 'desc' } },
+      },
+    });
+
+    if (!customer) {
+      throw new AppError('Customer not found.', 404);
+    }
+
+    return customer;
+  }
+
+  static async getCustomerTimeline(workspaceId: string, customerId: string) {
+    const customer = await this.getCustomerById(workspaceId, customerId);
+
+    const timelineItems: Array<{
+      id: string;
+      type: 'RECORDING' | 'JOB' | 'TASK' | 'ACTIVITY';
+      timestamp: Date;
+      title: string;
+      description?: string | null;
+      meta?: any;
+    }> = [];
+
+    // Add recordings
+    for (const rec of customer.recordings) {
+      timelineItems.push({
+        id: rec.id,
+        type: 'RECORDING',
+        timestamp: rec.recordedAt,
+        title: 'Voice Note Debrief',
+        description: rec.extractedData?.executiveSummary || rec.rawTranscript?.slice(0, 120),
+        meta: {
+          status: rec.status,
+          durationSec: rec.audioDurationSec,
+          extracted: rec.extractedData,
+        },
+      });
+    }
+
+    // Add jobs
+    for (const job of customer.jobs) {
+      timelineItems.push({
+        id: job.id,
+        type: 'JOB',
+        timestamp: job.createdAt,
+        title: `Job: ${job.title}`,
+        description: job.description,
+        meta: {
+          status: job.status,
+          quotedAmount: job.quotedAmount,
+          category: job.category,
+        },
+      });
+    }
+
+    // Add tasks
+    for (const task of customer.tasks) {
+      timelineItems.push({
+        id: task.id,
+        type: 'TASK',
+        timestamp: task.createdAt,
+        title: `Task: ${task.title}`,
+        description: task.description,
+        meta: {
+          status: task.status,
+          priority: task.priority,
+          dueDate: task.dueDate,
+        },
+      });
+    }
+
+    // Sort chronologically descending
+    timelineItems.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    return {
+      customer: {
+        id: customer.id,
+        name: customer.name,
+        companyName: customer.companyName,
+        phone: customer.phone,
+        email: customer.email,
+        address: customer.address,
+      },
+      timeline: timelineItems,
+    };
+  }
+
+  // ==================== JOBS ====================
+
+  static async listJobs(
+    workspaceId: string,
+    params: {
+      status?: JobStatus;
+      priority?: Priority;
+      customerId?: string;
+      search?: string;
+      page?: number;
+      limit?: number;
+    } = {}
+  ) {
+    const page = Math.max(1, params.page || 1);
+    const limit = Math.min(100, Math.max(1, params.limit || 20));
+    const skip = (page - 1) * limit;
+
+    const where: any = { workspaceId };
+    if (params.status) where.status = params.status;
+    if (params.priority) where.priority = params.priority;
+    if (params.customerId) where.customerId = params.customerId;
+    if (params.search) {
+      where.OR = [
+        { title: { contains: params.search, mode: 'insensitive' } },
+        { description: { contains: params.search, mode: 'insensitive' } },
+        { customer: { name: { contains: params.search, mode: 'insensitive' } } },
+      ];
+    }
+
+    const [total, jobs] = await Promise.all([
+      prisma.job.count({ where }),
+      prisma.job.findMany({
+        where,
+        include: {
+          customer: true,
+          _count: {
+            select: { tasks: true, recordings: true },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+    ]);
+
+    return {
+      jobs,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  static async createJob(
+    workspaceId: string,
+    data: {
+      customerId: string;
+      title: string;
+      description?: string;
+      category?: string;
+      status?: JobStatus;
+      priority?: Priority;
+      quotedAmount?: number;
+      laborHours?: number;
+      scheduledAt?: Date;
+    }
+  ) {
+    return await prisma.job.create({
+      data: {
+        workspaceId,
+        ...data,
+      },
+      include: { customer: true },
+    });
+  }
+
+  static async getJobById(workspaceId: string, jobId: string) {
+    const job = await prisma.job.findFirst({
+      where: { id: jobId, workspaceId },
+      include: {
+        customer: true,
+        recordings: { include: { extractedData: true } },
+        tasks: true,
+      },
+    });
+
+    if (!job) {
+      throw new AppError('Job not found.', 404);
+    }
+
+    return job;
+  }
+
+  static async updateJob(
+    workspaceId: string,
+    jobId: string,
+    data: {
+      title?: string;
+      description?: string;
+      status?: JobStatus;
+      priority?: Priority;
+      quotedAmount?: number;
+      laborHours?: number;
+      scheduledAt?: Date;
+      completedAt?: Date;
+    }
+  ) {
+    return await prisma.job.update({
+      where: { id: jobId },
+      data,
+      include: { customer: true },
+    });
+  }
+
+  // ==================== TASKS ====================
+
+  static async listTasks(
+    workspaceId: string,
+    params: {
+      status?: TaskStatus;
+      priority?: Priority;
+      assignedToId?: string;
+      customerId?: string;
+      jobId?: string;
+    } = {}
+  ) {
+    const where: any = { workspaceId };
+    if (params.status) where.status = params.status;
+    if (params.priority) where.priority = params.priority;
+    if (params.assignedToId) where.assignedToId = params.assignedToId;
+    if (params.customerId) where.customerId = params.customerId;
+    if (params.jobId) where.jobId = params.jobId;
+
+    return await prisma.task.findMany({
+      where,
+      include: {
+        customer: true,
+        job: true,
+        assignedTo: {
+          select: { id: true, fullName: true, email: true, avatar: true },
+        },
+      },
+      orderBy: [{ dueDate: 'asc' }, { createdAt: 'desc' }],
+    });
+  }
+
+  static async createTask(
+    workspaceId: string,
+    userId: string,
+    data: {
+      title: string;
+      description?: string;
+      priority?: Priority;
+      dueDate?: Date;
+      customerId?: string;
+      jobId?: string;
+      assignedToId?: string;
+    }
+  ) {
+    return await prisma.task.create({
+      data: {
+        workspaceId,
+        createdById: userId,
+        ...data,
+      },
+      include: { customer: true, job: true },
+    });
+  }
+
+  static async updateTask(
+    workspaceId: string,
+    taskId: string,
+    data: {
+      title?: string;
+      description?: string;
+      status?: TaskStatus;
+      priority?: Priority;
+      dueDate?: Date | null;
+      assignedToId?: string | null;
+    }
+  ) {
+    return await prisma.task.update({
+      where: { id: taskId },
+      data,
+      include: { customer: true, job: true, assignedTo: true },
+    });
+  }
+
+  static async toggleTaskStatus(workspaceId: string, taskId: string) {
+    const task = await prisma.task.findFirst({
+      where: { id: taskId, workspaceId },
+    });
+
+    if (!task) {
+      throw new AppError('Task not found.', 404);
+    }
+
+    const nextStatus = task.status === TaskStatus.DONE ? TaskStatus.TODO : TaskStatus.DONE;
+
+    return await prisma.task.update({
+      where: { id: taskId },
+      data: { status: nextStatus },
+      include: { customer: true, job: true },
+    });
+  }
+
+  // ==================== STATS & DASHBOARD ====================
+
+  static async getWorkspaceStats(workspaceId: string) {
+    const [
+      totalRecordings,
+      recordings,
+      totalCustomers,
+      totalJobs,
+      completedJobs,
+      pendingTasks,
+      recentRecordings,
+    ] = await Promise.all([
+      prisma.recording.count({ where: { workspaceId } }),
+      prisma.recording.findMany({
+        where: { workspaceId, status: 'COMPLETED' },
+        select: { audioDurationSec: true },
+      }),
+      prisma.customer.count({ where: { workspaceId } }),
+      prisma.job.count({ where: { workspaceId } }),
+      prisma.job.count({ where: { workspaceId, status: 'COMPLETED' } }),
+      prisma.task.count({ where: { workspaceId, status: 'TODO' } }),
+      prisma.recording.findMany({
+        where: { workspaceId },
+        include: {
+          customer: true,
+          job: true,
+          extractedData: true,
+          createdBy: { select: { id: true, fullName: true } },
+        },
+        orderBy: { recordedAt: 'desc' },
+        take: 5,
+      }),
+    ]);
+
+    const totalSecondsLogged = recordings.reduce((sum, r) => sum + (r.audioDurationSec || 0), 0);
+    const totalVoiceHours = parseFloat((totalSecondsLogged / 3600).toFixed(2));
+
+    return {
+      totalVoiceHours,
+      totalRecordings,
+      totalCustomers,
+      totalJobs,
+      completedJobs,
+      pendingTasks,
+      recentRecordings,
+    };
+  }
+}
