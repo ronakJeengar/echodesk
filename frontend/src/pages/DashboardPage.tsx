@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchStats, fetchRecordings } from '../lib/api';
+import { Recording } from '../types';
+import { WorkOrderPdfModal } from '../components/WorkOrderPdfModal';
 import {
   Mic,
   Briefcase,
@@ -10,7 +12,9 @@ import {
   ArrowRight,
   TrendingUp,
   Sparkles,
-  Play
+  Play,
+  FileText,
+  Printer
 } from 'lucide-react';
 
 interface DashboardPageProps {
@@ -19,6 +23,7 @@ interface DashboardPageProps {
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ onOpenUploader }) => {
   const navigate = useNavigate();
+  const [selectedRecordingForPdf, setSelectedRecordingForPdf] = useState<Recording | null>(null);
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['stats'],
@@ -113,7 +118,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onOpenUploader }) 
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-bold text-white">Recent Voice Debriefs & Extractions</h2>
-            <p className="text-xs text-slate-400">Click any note to open interactive audio studio & waveform player</p>
+            <p className="text-xs text-slate-400">Click any note to open interactive audio studio or export work order PDF</p>
           </div>
           <Link
             to="/studio"
@@ -139,10 +144,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onOpenUploader }) 
               return (
                 <div
                   key={rec.id}
-                  onClick={() => navigate(`/studio?id=${rec.id}`)}
-                  className="glass-panel p-5 rounded-2xl border border-slate-800/90 bg-slate-900/60 hover:border-emerald-500/40 hover:bg-slate-900/90 transition-all cursor-pointer group shadow-lg flex flex-col justify-between"
+                  className="glass-panel p-5 rounded-2xl border border-slate-800/90 bg-slate-900/60 hover:border-emerald-500/40 hover:bg-slate-900/90 transition-all group shadow-lg flex flex-col justify-between"
                 >
-                  <div className="space-y-2">
+                  <div
+                    onClick={() => navigate(`/studio?id=${rec.id}`)}
+                    className="space-y-2 cursor-pointer"
+                  >
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <span className="text-base font-bold text-white group-hover:text-emerald-400 transition">
@@ -176,9 +183,26 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onOpenUploader }) 
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1 text-emerald-400 group-hover:translate-x-1 transition font-medium">
-                      <Play className="w-3.5 h-3.5 fill-current" />
-                      <span>Inspect Audio</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedRecordingForPdf(rec);
+                        }}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-semibold border border-emerald-500/30 transition"
+                        title="Preview & Print PDF Work Order"
+                      >
+                        <Printer className="w-3.5 h-3.5" />
+                        <span>PDF Invoice</span>
+                      </button>
+
+                      <button
+                        onClick={() => navigate(`/studio?id=${rec.id}`)}
+                        className="flex items-center gap-1 text-slate-300 hover:text-white px-2 py-1 transition font-medium"
+                      >
+                        <Play className="w-3 h-3 fill-current" />
+                        <span>Inspect</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -187,6 +211,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onOpenUploader }) 
           )}
         </div>
       </div>
+
+      {/* PDF Preview Modal */}
+      <WorkOrderPdfModal
+        recording={selectedRecordingForPdf}
+        isOpen={!!selectedRecordingForPdf}
+        onClose={() => setSelectedRecordingForPdf(null)}
+      />
     </div>
   );
 };

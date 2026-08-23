@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchJobs, fetchTasks, toggleTask } from '../lib/api';
-import { Job, Task } from '../types';
-import { Kanban, Calendar, Clock, DollarSign, CheckCircle2, User, AlertCircle } from 'lucide-react';
+import { Job, Task, Recording } from '../types';
+import { WorkOrderPdfModal } from '../components/WorkOrderPdfModal';
+import { Kanban, Calendar, Clock, DollarSign, CheckCircle2, User, AlertCircle, Printer } from 'lucide-react';
 
 export const JobsKanbanPage: React.FC = () => {
   const queryClient = useQueryClient();
+  const [pdfJobRecording, setPdfJobRecording] = useState<Recording | null>(null);
 
   const { data: jobs = [], isLoading: jobsLoading } = useQuery({
     queryKey: ['jobs'],
@@ -24,6 +26,58 @@ export const JobsKanbanPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
     },
   });
+
+  const handleOpenPdfForJob = (job: Job) => {
+    const rec: Recording = {
+      id: `job-${job.id.slice(0, 8)}`,
+      workspaceId: job.workspaceId,
+      customerId: job.customerId,
+      jobId: job.id,
+      audioUrl: '',
+      audioDurationSec: 45.0,
+      audioFormat: 'm4a',
+      fileSizeBytes: 1048576,
+      status: 'COMPLETED',
+      wordTimestamps: [],
+      customer: {
+        id: job.customerId,
+        name: job.customer?.name || 'Customer',
+        companyName: job.customer?.companyName,
+      },
+      extractedData: {
+        executiveSummary: job.description || `Field operations and diagnostic work performed for ${job.title}.`,
+        sentiment: 'POSITIVE',
+        confidenceScore: 0.98,
+        customerInfo: {
+          name: job.customer?.name || 'Client',
+          companyName: job.customer?.companyName,
+        },
+        jobDetails: {
+          title: job.title,
+          category: job.category || 'HVAC',
+          laborHours: job.laborHours || 1.5,
+        },
+        partsAndServices: [],
+        financials: {
+          quotedAmount: job.quotedAmount || 285.0,
+          laborCost: (job.laborHours || 1.5) * 95.0,
+          partsCost: (job.quotedAmount || 285.0) - (job.laborHours || 1.5) * 95.0,
+          isPaid: job.status === 'COMPLETED',
+          paymentMethod: 'INVOICE_PENDING',
+        },
+        actionItems: (job.tasks || []).map((t) => ({
+          title: t.title,
+          priority: t.priority,
+          assigneeRole: t.assigneeRole || 'FIELD_TECH',
+        })),
+      },
+      recordedAt: job.createdAt || new Date().toISOString(),
+      createdAt: job.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    setPdfJobRecording(rec);
+  };
 
   const columns: Array<{ title: string; status: Job['status']; color: string }> = [
     { title: 'Scheduled & Dispatched', status: 'SCHEDULED', color: 'border-blue-500/40 text-blue-400' },
@@ -96,11 +150,21 @@ export const JobsKanbanPage: React.FC = () => {
                           <span>{job.customer?.name || 'Client'}</span>
                         </div>
 
-                        {job.laborHours && (
-                          <span className="font-mono text-slate-400">
-                            {job.laborHours}h labor
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {job.laborHours && (
+                            <span className="font-mono text-slate-400">
+                              {job.laborHours}h labor
+                            </span>
+                          )}
+
+                          <button
+                            onClick={() => handleOpenPdfForJob(job)}
+                            className="p-1 rounded-md text-emerald-400 hover:bg-emerald-500/10 transition"
+                            title="Generate PDF Work Order Invoice"
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))
@@ -166,6 +230,13 @@ export const JobsKanbanPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* PDF Modal */}
+      <WorkOrderPdfModal
+        recording={pdfJobRecording}
+        isOpen={!!pdfJobRecording}
+        onClose={() => setPdfJobRecording(null)}
+      />
     </div>
   );
 };

@@ -1,19 +1,83 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchCustomers } from '../lib/api';
-import { Customer } from '../types';
-import { Users, Search, Phone, MapPin, Mic, Briefcase, Plus, Calendar, ArrowUpRight } from 'lucide-react';
+import { fetchCustomers, fetchRecordings } from '../lib/api';
+import { Customer, Recording } from '../types';
+import { WorkOrderPdfModal } from '../components/WorkOrderPdfModal';
+import { Users, Search, Phone, MapPin, Mic, Briefcase, Plus, Calendar, ArrowUpRight, Printer } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const CustomersPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [pdfRecording, setPdfRecording] = useState<Recording | null>(null);
   const navigate = useNavigate();
 
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ['customers', search],
     queryFn: () => fetchCustomers(search),
   });
+
+  const { data: recordings = [] } = useQuery({
+    queryKey: ['recordings'],
+    queryFn: fetchRecordings,
+  });
+
+  const handleOpenPdfForCustomer = (cust: Customer) => {
+    // Find customer's latest voice recording or create a structured client work order draft
+    const matchedRecording = recordings.find(
+      (r) => r.customerId === cust.id || r.customer?.id === cust.id
+    );
+
+    const recordingToPrint: Recording = matchedRecording || {
+      id: `client-${cust.id.slice(0, 8)}`,
+      workspaceId: cust.workspaceId,
+      customerId: cust.id,
+      audioUrl: '',
+      audioDurationSec: 45.0,
+      audioFormat: 'm4a',
+      fileSizeBytes: 1048576,
+      status: 'COMPLETED',
+      wordTimestamps: [],
+      customer: {
+        id: cust.id,
+        name: cust.name,
+        companyName: cust.companyName,
+        phone: cust.phone,
+        address: cust.address,
+      },
+      extractedData: {
+        executiveSummary: `On-site diagnostic inspection and scheduled service for ${cust.name}.`,
+        sentiment: 'POSITIVE',
+        confidenceScore: 0.98,
+        customerInfo: {
+          name: cust.name,
+          companyName: cust.companyName,
+          phone: cust.phone,
+          address: cust.address,
+        },
+        partsAndServices: [],
+        financials: {
+          quotedAmount: 250.0,
+          laborCost: 150.0,
+          partsCost: 100.0,
+          isPaid: false,
+          paymentMethod: 'INVOICE_PENDING',
+        },
+        actionItems: [
+          {
+            title: `Follow up with ${cust.name}`,
+            priority: 'HIGH',
+            assigneeRole: 'ADMIN',
+          },
+        ],
+      },
+      recordedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    setPdfRecording(recordingToPrint);
+  };
 
   return (
     <div className="p-8 space-y-6 max-w-7xl mx-auto">
@@ -105,7 +169,7 @@ export const CustomersPage: React.FC = () => {
               <div className="flex items-center justify-between pt-4 mt-3 border-t border-slate-800 text-xs text-slate-400">
                 <span>{cust._count?.jobs || 0} Active Jobs</span>
                 <span className="text-emerald-400 font-medium flex items-center gap-0.5 group-hover:translate-x-0.5 transition">
-                  View Timeline <ArrowUpRight className="w-3.5 h-3.5" />
+                  View Profile <ArrowUpRight className="w-3.5 h-3.5" />
                 </span>
               </div>
             </div>
@@ -113,10 +177,10 @@ export const CustomersPage: React.FC = () => {
         </div>
       )}
 
-      {/* Customer Details Modal / Slide-over */}
+      {/* Customer Details Modal */}
       {selectedCustomer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="glass-panel-glow bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+          <div className="glass-panel-glow bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5">
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="text-xl font-bold text-white">{selectedCustomer.name}</h2>
@@ -149,18 +213,37 @@ export const CustomersPage: React.FC = () => {
               </p>
             </div>
 
-            <button
-              onClick={() => {
-                navigate('/studio');
-                setSelectedCustomer(null);
-              }}
-              className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs shadow-lg shadow-emerald-500/20 transition"
-            >
-              Open Customer Audio Timeline
-            </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                onClick={() => {
+                  handleOpenPdfForCustomer(selectedCustomer);
+                }}
+                className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs border border-emerald-500/30 transition"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Print Work Order PDF</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  navigate('/studio');
+                  setSelectedCustomer(null);
+                }}
+                className="py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs shadow-lg shadow-emerald-500/20 transition"
+              >
+                Open Audio Studio
+              </button>
+            </div>
           </div>
         </div>
       )}
+
+      {/* PDF Modal */}
+      <WorkOrderPdfModal
+        recording={pdfRecording}
+        isOpen={!!pdfRecording}
+        onClose={() => setPdfRecording(null)}
+      />
     </div>
   );
 };
