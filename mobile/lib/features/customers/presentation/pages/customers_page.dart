@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/metric_tile.dart';
 import '../providers/customers_provider.dart';
 import '../widgets/add_customer_sheet.dart';
 
@@ -29,28 +31,40 @@ class CustomersPage extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'customers_page_add_client_fab',
-        onPressed: () => AddCustomerSheet.show(context),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.black,
-        icon: const Icon(Icons.person_add_rounded, size: 20),
-        label: Text('New Client', style: AppTypography.button.copyWith(color: Colors.black)),
-      ),
       body: Column(
         children: [
-          // Search Input
+          // Search & Action Header
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              onChanged: (val) {
-                ref.read(customersSearchQueryProvider.notifier).state = val;
-              },
-              decoration: const InputDecoration(
-                hintText: 'Search customers by name, phone, or tag...',
-                prefixIcon: Icon(Icons.search_rounded, color: AppColors.textMuted, size: 20),
-                suffixIcon: Icon(Icons.tune_rounded, color: AppColors.textMuted, size: 18),
-              ),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    onChanged: (val) {
+                      ref.read(customersSearchQueryProvider.notifier).state = val;
+                    },
+                    decoration: const InputDecoration(
+                      hintText: 'Search customers by name, phone, or tag...',
+                      prefixIcon: Icon(Icons.search_rounded, color: AppColors.textMuted, size: 20),
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                ElevatedButton.icon(
+                  onPressed: () => AddCustomerSheet.show(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
+                  ),
+                  icon: const Icon(Icons.add_rounded, size: 18),
+                  label: Text('Add', style: AppTypography.button.copyWith(color: Colors.black, fontSize: 13)),
+                ),
+              ],
             ),
           ),
 
@@ -59,7 +73,19 @@ class CustomersPage extends ConsumerWidget {
               data: (customers) {
                 if (customers.isEmpty) {
                   return Center(
-                    child: Text('No customers found', style: AppTypography.bodyMedium),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.people_outline_rounded, size: 48, color: AppColors.textMuted),
+                        const SizedBox(height: 12),
+                        Text('No customers found', style: AppTypography.h3),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Tap "+ Add" above to register your first client.',
+                          style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+                        ),
+                      ],
+                    ),
                   );
                 }
 
@@ -68,14 +94,14 @@ class CustomersPage extends ConsumerWidget {
                   color: AppColors.primary,
                   backgroundColor: AppColors.surface,
                   child: ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     itemCount: customers.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       final customer = customers[index];
                       return InkWell(
                         onTap: () => context.push('/customers/${customer.id}'),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                         child: _buildCustomerTile(
                           name: customer.name,
                           company: customer.companyName ?? 'Independent Client',
@@ -112,42 +138,30 @@ class CustomersPage extends ConsumerWidget {
     required int voiceNotesCount,
     required int jobsCount,
   }) {
-    return Container(
+    return GlassCard(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(name, style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w600)),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceElevated,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: AppColors.border),
+              Expanded(
+                child: Text(
+                  name,
+                  style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.mic_none_rounded, size: 12, color: AppColors.primary),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$voiceNotesCount notes',
-                      style: AppTypography.caption.copyWith(color: AppColors.primary),
-                    ),
-                  ],
-                ),
+              ),
+              StatusPill(
+                label: '$voiceNotesCount notes',
+                color: AppColors.primary,
+                icon: Icons.mic_none_rounded,
               ),
             ],
           ),
           const SizedBox(height: 4),
-          Text(company, style: AppTypography.bodyMedium),
+          Text(company, style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -157,7 +171,13 @@ class CustomersPage extends ConsumerWidget {
               const SizedBox(width: 16),
               const Icon(Icons.location_on_outlined, size: 14, color: AppColors.textMuted),
               const SizedBox(width: 4),
-              Text(location, style: AppTypography.caption),
+              Expanded(
+                child: Text(
+                  location,
+                  style: AppTypography.caption,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           ),
         ],
