@@ -4,7 +4,7 @@ import { fetchCustomers, fetchRecordings, fetchCustomerTimeline } from '../lib/a
 import { Customer, Recording } from '../types';
 import { WorkOrderPdfModal } from '../components/WorkOrderPdfModal';
 import { AddCustomerModal } from '../components/AddCustomerModal';
-import { Users, Search, Phone, MapPin, Mic, Briefcase, Plus, Calendar, ArrowUpRight, Printer, X, Play, Clock, Sparkles } from 'lucide-react';
+import { Users, Search, Phone, MapPin, Mic, Briefcase, Plus, Calendar, ArrowUpRight, Printer, X, Play, Clock, Sparkles, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const CustomersPage: React.FC = () => {
@@ -298,13 +298,21 @@ export const CustomersPage: React.FC = () => {
             </div>
 
             {/* Bottom Actions */}
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+            <div className="flex flex-wrap items-center justify-end gap-2.5 pt-3 border-t border-slate-800">
               <button
                 onClick={() => handleOpenPdfForCustomer(selectedCustomer)}
                 className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs border border-emerald-500/30 transition"
               >
                 <Printer className="w-4 h-4" />
-                <span>Print Work Order PDF</span>
+                <span>Work Order PDF</span>
+              </button>
+
+              <button
+                onClick={() => handleOpenPdfForCustomer(selectedCustomer)}
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 font-bold text-xs border border-cyan-500/30 transition"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Account Statement PDF</span>
               </button>
 
               <button

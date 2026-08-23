@@ -396,4 +396,214 @@ class WorkOrderPdfService {
       filename: 'WorkOrder_${recording.id}.pdf',
     );
   }
+
+  static Future<Uint8List> generateCustomerStatementPdf({
+    required String customerName,
+    String? companyName,
+    String? phone,
+    String? address,
+    required List<dynamic> jobs,
+    required List<dynamic> recordings,
+    String businessName = 'Apex Field Services',
+  }) async {
+    final pdf = pw.Document();
+    final dateStr = DateFormat('MMMM dd, yyyy').format(DateTime.now());
+
+    double totalBilled = 0.0;
+    for (final j in jobs) {
+      if (j['quotedAmount'] != null) {
+        totalBilled += (j['quotedAmount'] as num).toDouble();
+      }
+    }
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.letter,
+        margin: const pw.EdgeInsets.all(36),
+        build: (pw.Context context) {
+          return [
+            // Header
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      businessName,
+                      style: pw.TextStyle(
+                        fontSize: 20,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.blueGrey900,
+                      ),
+                    ),
+                    pw.SizedBox(height: 2),
+                    pw.Text(
+                      'Client Account Statement & Service Ledger',
+                      style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
+                    ),
+                    pw.Text(
+                      'Automated Field Operations Audit Trail',
+                      style: const pw.TextStyle(fontSize: 9, color: emeraldDark),
+                    ),
+                  ],
+                ),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                  children: [
+                    pw.Container(
+                      padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: const pw.BoxDecoration(
+                        color: emeraldLight,
+                        borderRadius: pw.BorderRadius.all(pw.Radius.circular(4)),
+                      ),
+                      child: pw.Text(
+                        'STATEMENT',
+                        style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: emeraldDark),
+                      ),
+                    ),
+                    pw.SizedBox(height: 4),
+                    pw.Text('Date: $dateStr', style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey800)),
+                  ],
+                ),
+              ],
+            ),
+
+            pw.SizedBox(height: 20),
+
+            // Client Info & Financial Summary
+            pw.Row(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Expanded(
+                  child: pw.Container(
+                    padding: const pw.EdgeInsets.all(12),
+                    decoration: const pw.BoxDecoration(
+                      color: PdfColors.grey100,
+                      borderRadius: pw.BorderRadius.all(pw.Radius.circular(6)),
+                    ),
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('CLIENT ACCOUNT:', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.grey700)),
+                        pw.SizedBox(height: 4),
+                        pw.Text(customerName, style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: PdfColors.blueGrey900)),
+                        if (companyName != null)
+                          pw.Text(companyName, style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey800)),
+                        if (phone != null)
+                          pw.Text('Phone: $phone', style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey700)),
+                        if (address != null)
+                          pw.Text('Location: $address', style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey700)),
+                      ],
+                    ),
+                  ),
+                ),
+                pw.SizedBox(width: 16),
+                pw.Expanded(
+                  child: pw.Container(
+                    padding: const pw.EdgeInsets.all(12),
+                    decoration: pw.BoxDecoration(
+                      color: emeraldLight,
+                      borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                      border: pw.Border.all(color: emeraldPrimary, width: 0.5),
+                    ),
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('LIFETIME SERVICE REVENUE', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: emeraldDark)),
+                        pw.SizedBox(height: 4),
+                        pw.Text('\$${totalBilled.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: emeraldDark)),
+                        pw.SizedBox(height: 2),
+                        pw.Text('Total Jobs: ${jobs.length} • Audio Visits: ${recordings.length}', style: const pw.TextStyle(fontSize: 9, color: emeraldDark)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            pw.SizedBox(height: 20),
+
+            // Service History Table
+            pw.Text('Service History & Work Orders', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: PdfColors.blueGrey900)),
+            pw.SizedBox(height: 8),
+
+            pw.TableHelper.fromTextArray(
+              headers: ['Type', 'Service / Diagnostic Description', 'Status', 'Quoted Amount'],
+              data: [
+                ...jobs.map((j) => [
+                  'Work Order',
+                  j['title'] ?? 'Field Service',
+                  j['status'] ?? 'SCHEDULED',
+                  j['quotedAmount'] != null ? '\$${(j['quotedAmount'] as num).toDouble().toStringAsFixed(2)}' : '-',
+                ]),
+                ...recordings.map((r) => [
+                  'Voice Debrief',
+                  (r['rawTranscript'] as String?)?.isNotEmpty == true ? (r['rawTranscript'] as String).substring(0, (r['rawTranscript'] as String).length.clamp(0, 70)) : 'Audio diagnostic debrief',
+                  'LOGGED',
+                  '-',
+                ]),
+              ],
+              headerStyle: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+              headerDecoration: const pw.BoxDecoration(color: emeraldPrimary),
+              cellStyle: const pw.TextStyle(fontSize: 9),
+              cellPadding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            ),
+
+            pw.SizedBox(height: 30),
+
+            // Footer Signoff
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Container(width: 150, height: 1, color: PdfColors.grey400),
+                    pw.SizedBox(height: 4),
+                    pw.Text('Client Authorization', style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey700)),
+                  ],
+                ),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Container(width: 150, height: 1, color: PdfColors.grey400),
+                    pw.SizedBox(height: 4),
+                    pw.Text('Service Provider Signature', style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey700)),
+                  ],
+                ),
+              ],
+            ),
+          ];
+        },
+      ),
+    );
+
+    return pdf.save();
+  }
+
+  static Future<void> previewAndPrintStatement({
+    required BuildContext context,
+    required String customerName,
+    String? companyName,
+    String? phone,
+    String? address,
+    required List<dynamic> jobs,
+    required List<dynamic> recordings,
+  }) async {
+    final pdfBytes = await generateCustomerStatementPdf(
+      customerName: customerName,
+      companyName: companyName,
+      phone: phone,
+      address: address,
+      jobs: jobs,
+      recordings: recordings,
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdfBytes,
+      name: 'Statement_${customerName.replaceAll(' ', '_')}.pdf',
+    );
+  }
 }

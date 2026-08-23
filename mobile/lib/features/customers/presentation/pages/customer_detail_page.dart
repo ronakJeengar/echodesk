@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/pdf/work_order_pdf_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../domain/models/customer_model.dart';
@@ -34,6 +35,27 @@ class CustomerDetailPage extends ConsumerWidget {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf_rounded, color: AppColors.primary),
+            tooltip: 'Export Statement PDF',
+            onPressed: () async {
+              final cust = customerAsync.value;
+              final timeline = timelineAsync.value;
+              if (cust != null && timeline != null) {
+                await WorkOrderPdfService.previewAndPrintStatement(
+                  context: context,
+                  customerName: cust.name,
+                  companyName: cust.companyName,
+                  phone: cust.phone,
+                  address: cust.address,
+                  jobs: timeline['jobs'] as List<dynamic>? ?? [],
+                  recordings: timeline['recordings'] as List<dynamic>? ?? [],
+                );
+              }
+            },
+          ),
+        ],
       ),
       body: customerAsync.when(
         data: (customer) {
