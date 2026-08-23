@@ -12,6 +12,7 @@ import '../widgets/signature_modal.dart';
 import '../../../customers/presentation/widgets/follow_up_composer_sheet.dart';
 import '../../../safety/presentation/widgets/safety_audit_sheet.dart';
 import '../widgets/speech_analytics_sheet.dart';
+import '../../../calculators/presentation/widgets/margin_estimator_sheet.dart';
 
 final recordingDetailFutureProvider =
     FutureProvider.autoDispose.family<RecordingModel?, String>((ref, recordingId) async {
@@ -776,6 +777,26 @@ class _RecordingDetailPageState extends ConsumerState<RecordingDetailPage> {
                       ),
                     ),
                   ],
+                ),
+
+                const SizedBox(height: 10),
+
+                // Profit Margin & Scope Estimator Button
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => MarginEstimatorSheet.show(context),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.primary, width: 1.2),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    icon: const Icon(Icons.trending_up_rounded, size: 18, color: AppColors.primary),
+                    label: Text(
+                      'Profit Margin & Quote Estimator',
+                      style: AppTypography.button.copyWith(color: AppColors.primary),
+                    ),
+                  ),
                 ),
 
                 const SizedBox(height: 10),
