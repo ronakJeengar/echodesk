@@ -26,37 +26,23 @@ class DashboardPage extends ConsumerWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 32,
-              height: 32,
+              width: 28,
+              height: 28,
               decoration: BoxDecoration(
                 color: AppColors.primaryGlow,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: AppColors.primary.withValues(alpha: 0.5)),
               ),
-              child: const Icon(Icons.graphic_eq_rounded, color: AppColors.primary, size: 18),
+              child: const Icon(Icons.graphic_eq_rounded, color: AppColors.primary, size: 16),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 8),
             Text('EchoDesk', style: AppTypography.h3),
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.qr_code_scanner_rounded, color: AppColors.textSecondary),
-            tooltip: 'Equipment Tag Decoder',
-            onPressed: () => EquipmentDecoderSheet.show(context),
-          ),
-          IconButton(
-            icon: const Icon(Icons.calculate_outlined, color: AppColors.textSecondary),
-            tooltip: 'Trade Diagnostic Calculators',
-            onPressed: () => TradeCalculatorsSheet.show(context),
-          ),
-          IconButton(
-            icon: const Icon(Icons.people_outline_rounded, color: AppColors.textSecondary),
-            tooltip: 'Fleet Roster',
-            onPressed: () => TechniciansRosterSheet.show(context),
-          ),
           IconButton(
             icon: Stack(
               clipBehavior: Clip.none,
@@ -84,15 +70,65 @@ class DashboardPage extends ConsumerWidget {
             tooltip: 'Account & Switch User',
             onPressed: () => context.push('/login'),
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AppColors.textSecondary),
-            onPressed: () {
-              ref.invalidate(dashboardStatsProvider);
-              ref.invalidate(pendingRecordingsProvider);
-              ref.invalidate(notificationsFutureProvider);
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert_rounded, color: AppColors.textSecondary),
+            color: AppColors.surfaceElevated,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            onSelected: (value) {
+              if (value == 'decoder') EquipmentDecoderSheet.show(context);
+              if (value == 'calc') TradeCalculatorsSheet.show(context);
+              if (value == 'roster') TechniciansRosterSheet.show(context);
+              if (value == 'refresh') {
+                ref.invalidate(dashboardStatsProvider);
+                ref.invalidate(pendingRecordingsProvider);
+                ref.invalidate(notificationsFutureProvider);
+              }
             },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'decoder',
+                child: Row(
+                  children: [
+                    const Icon(Icons.qr_code_scanner_rounded, color: AppColors.primary, size: 18),
+                    const SizedBox(width: 10),
+                    Text('Equipment Decoder', style: AppTypography.caption),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'calc',
+                child: Row(
+                  children: [
+                    const Icon(Icons.calculate_outlined, color: AppColors.secondary, size: 18),
+                    const SizedBox(width: 10),
+                    Text('Trade Calculators', style: AppTypography.caption),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'roster',
+                child: Row(
+                  children: [
+                    const Icon(Icons.people_outline_rounded, color: AppColors.textPrimary, size: 18),
+                    const SizedBox(width: 10),
+                    Text('Fleet Roster', style: AppTypography.caption),
+                  ],
+                ),
+              ),
+              const PopupMenuDivider(),
+              PopupMenuItem(
+                value: 'refresh',
+                child: Row(
+                  children: [
+                    const Icon(Icons.refresh_rounded, color: AppColors.textSecondary, size: 18),
+                    const SizedBox(width: 10),
+                    Text('Refresh Data', style: AppTypography.caption),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
         ],
       ),
       body: RefreshIndicator(
@@ -291,6 +327,75 @@ class DashboardPage extends ConsumerWidget {
                   _buildStatCard('Tasks To-Do', '0', Icons.check_circle_outline_rounded, AppColors.success),
                 ],
               ),
+            ),
+            const SizedBox(height: 20),
+
+            // Field Tools Quick Launcher
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => EquipmentDecoderSheet.show(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Column(
+                        children: [
+                          const Icon(Icons.qr_code_scanner_rounded, color: AppColors.primary, size: 20),
+                          const SizedBox(height: 4),
+                          Text('Decoder', style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold, fontSize: 11)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => TradeCalculatorsSheet.show(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Column(
+                        children: [
+                          const Icon(Icons.calculate_outlined, color: AppColors.secondary, size: 20),
+                          const SizedBox(height: 4),
+                          Text('Calculators', style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold, fontSize: 11)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => TechniciansRosterSheet.show(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Column(
+                        children: [
+                          const Icon(Icons.people_outline_rounded, color: AppColors.textPrimary, size: 20),
+                          const SizedBox(height: 4),
+                          Text('Fleet Roster', style: AppTypography.caption.copyWith(fontWeight: FontWeight.bold, fontSize: 11)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 24),
 
