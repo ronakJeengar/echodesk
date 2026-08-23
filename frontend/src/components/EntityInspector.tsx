@@ -10,6 +10,7 @@ import { CustomerReviewRequestModal } from './CustomerReviewRequestModal';
 import { LanguageTranslationModal } from './LanguageTranslationModal';
 import { MaintenanceAgreementModal } from './MaintenanceAgreementModal';
 import { SitePhotoAnnotationModal } from './SitePhotoAnnotationModal';
+import { CustomerPortalPreviewModal } from './CustomerPortalPreviewModal';
 import {
   User,
   Wrench,
@@ -30,7 +31,8 @@ import {
   Star,
   Languages,
   Award,
-  Camera
+  Camera,
+  Globe
 } from 'lucide-react';
 
 interface EntityInspectorProps {
@@ -58,6 +60,7 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
   const [isTranslateOpen, setIsTranslateOpen] = useState(false);
   const [isPmaModalOpen, setIsPmaModalOpen] = useState(false);
   const [isPhotosOpen, setIsPhotosOpen] = useState(false);
+  const [isPortalOpen, setIsPortalOpen] = useState(false);
   const [signedBy, setSignedBy] = useState<string | null>(null);
   const [promptText, setPromptText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -345,6 +348,24 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <button
+            onClick={() => setIsPmaModalOpen(true)}
+            className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
+          >
+            <Award className="w-4 h-4 text-amber-400" />
+            PMA Agreement
+          </button>
+
+          <button
+            onClick={() => setIsPortalOpen(true)}
+            className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
+          >
+            <Globe className="w-4 h-4 text-cyan-400" />
+            Live ETA & Portal
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <button
             onClick={handlePrintPdf}
             className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
           >
@@ -353,23 +374,27 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
           </button>
 
           <button
-            onClick={() => setIsPmaModalOpen(true)}
+            onClick={() => setIsAdjustOpen(true)}
+            disabled={isLoading}
             className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
           >
-            <Award className="w-4 h-4 text-amber-400" />
-            PMA Agreement
+            <Edit3 className="w-4 h-4 text-emerald-400" />
+            AI Prompt Correction
           </button>
         </div>
-
-        <button
-          onClick={() => setIsAdjustOpen(true)}
-          disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-medium text-xs border border-slate-750 transition"
-        >
-          <Edit3 className="w-4 h-4 text-emerald-400" />
-          AI Prompt Extraction Correction
-        </button>
       </div>
+
+      {/* Customer Self-Service & ETA Tracking Portal Modal */}
+      <CustomerPortalPreviewModal
+        isOpen={isPortalOpen}
+        onClose={() => setIsPortalOpen(false)}
+        customerName={extractedData.customerInfo?.name || 'Customer'}
+        customerPhone={extractedData.customerInfo?.phone || '(555) 234-5678'}
+        customerAddress={extractedData.customerInfo?.address || '742 Evergreen Terrace'}
+        jobSummary={extractedData.executiveSummary}
+        quotedAmount={extractedData.financials?.quotedAmount || 385.0}
+        recordingId={recordingId}
+      />
 
       {/* Site Photos & Visual AI Annotation Modal */}
       <SitePhotoAnnotationModal

@@ -17,6 +17,7 @@ import '../../../calculators/presentation/widgets/margin_estimator_sheet.dart';
 import '../../../localization/presentation/widgets/language_translation_sheet.dart';
 import '../../../customers/presentation/widgets/maintenance_agreement_sheet.dart';
 import '../widgets/site_photos_sheet.dart';
+import '../../../customers/presentation/widgets/customer_portal_sheet.dart';
 
 final recordingDetailFutureProvider =
     FutureProvider.autoDispose.family<RecordingModel?, String>((ref, recordingId) async {
@@ -842,6 +843,36 @@ class _RecordingDetailPageState extends ConsumerState<RecordingDetailPage> {
                     label: Text(
                       'PMA Maintenance Agreement Proposal',
                       style: AppTypography.button.copyWith(color: Colors.amber),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // Customer Live Portal & ETA Button
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      CustomerPortalSheet.show(
+                        context,
+                        customerName: data.customerInfo?['name'] as String? ?? 'Valued Customer',
+                        customerPhone: data.customerInfo?['phone'] as String? ?? '(555) 234-5678',
+                        address: data.customerInfo?['address'] as String? ?? '742 Evergreen Terrace',
+                        jobSummary: data.executiveSummary,
+                        quotedAmount: data.financials?.quotedAmount ?? 385.0,
+                        recordingId: recording.id,
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.primary, width: 1.2),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    icon: const Icon(Icons.language_rounded, size: 18, color: AppColors.primary),
+                    label: Text(
+                      'Live Homeowner Portal & ETA Link',
+                      style: AppTypography.button.copyWith(color: AppColors.primary),
                     ),
                   ),
                 ),
