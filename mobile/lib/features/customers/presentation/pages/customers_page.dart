@@ -1,61 +1,84 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../providers/customers_provider.dart';
 
-class CustomersPage extends StatelessWidget {
+class CustomersPage extends ConsumerWidget {
   const CustomersPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final customersAsync = ref.watch(customersListProvider);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text('Customers', style: AppTypography.h3),
         actions: [
           IconButton(
-            icon: const Icon(Icons.person_add_outlined, color: AppColors.primary),
-            onPressed: () {},
+            icon: const Icon(Icons.refresh_rounded, color: AppColors.primary),
+            onPressed: () => ref.invalidate(customersListProvider),
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: Column(
         children: [
           // Search Input
-          const TextField(
-            decoration: InputDecoration(
-              hintText: 'Search customers by name, phone, or tag...',
-              prefixIcon: Icon(Icons.search_rounded, color: AppColors.textMuted, size: 20),
-              suffixIcon: Icon(Icons.tune_rounded, color: AppColors.textMuted, size: 18),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              onChanged: (val) {
+                ref.read(customersSearchQueryProvider.notifier).state = val;
+              },
+              decoration: const InputDecoration(
+                hintText: 'Search customers by name, phone, or tag...',
+                prefixIcon: Icon(Icons.search_rounded, color: AppColors.textMuted, size: 20),
+                suffixIcon: Icon(Icons.tune_rounded, color: AppColors.textMuted, size: 18),
+              ),
             ),
           ),
-          const SizedBox(height: 20),
 
-          _buildCustomerTile(
-            name: 'Sarah Jenkins',
-            company: 'Apex Logistics LLC',
-            phone: '(555) 019-2834',
-            location: 'Austin, TX',
-            voiceNotesCount: 4,
-            jobsCount: 2,
-          ),
-          const SizedBox(height: 12),
-          _buildCustomerTile(
-            name: 'Marcus Vance',
-            company: 'Oakwood Dental Clinic',
-            phone: '(555) 392-8819',
-            location: 'Round Rock, TX',
-            voiceNotesCount: 2,
-            jobsCount: 1,
-          ),
-          const SizedBox(height: 12),
-          _buildCustomerTile(
-            name: 'Elena Rostova',
-            company: 'Skyline Architecture',
-            phone: '(555) 902-1144',
-            location: 'Downtown Austin',
-            voiceNotesCount: 6,
-            jobsCount: 3,
+          Expanded(
+            child: customersAsync.when(
+              data: (customers) {
+                if (customers.isEmpty) {
+                  return Center(
+                    child: Text('No customers found', style: AppTypography.bodyMedium),
+                  );
+                }
+
+                return RefreshIndicator(
+                  onRefresh: () async => ref.refresh(customersListProvider),
+                  color: AppColors.primary,
+                  backgroundColor: AppColors.surface,
+                  child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: customers.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final customer = customers[index];
+                      return _buildCustomerTile(
+                        name: customer.name,
+                        company: customer.companyName ?? 'Independent Client',
+                        phone: customer.phone ?? 'No phone listed',
+                        location: customer.city != null
+                            ? '${customer.city}, ${customer.state ?? ''}'
+                            : customer.address ?? 'On-site service',
+                        voiceNotesCount: customer.voiceNotesCount ?? 0,
+                        jobsCount: customer.jobsCount ?? 0,
+                      );
+                    },
+                  ),
+                );
+              },
+              loading: () => const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              ),
+              error: (err, _) => Center(
+                child: Text('Error loading customers: $err', style: AppTypography.bodyMedium),
+              ),
+            ),
           ),
         ],
       ),
