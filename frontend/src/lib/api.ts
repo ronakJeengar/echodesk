@@ -67,9 +67,40 @@ export const fetchCustomers = async (search?: string): Promise<Customer[]> => {
   return res.data.data.customers;
 };
 
+export const createCustomer = async (data: {
+  name: string;
+  companyName?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  tags?: string[];
+}): Promise<Customer> => {
+  const res = await api.post('/customers', data);
+  return res.data.data;
+};
+
+export const fetchCustomerTimeline = async (customerId: string) => {
+  const res = await api.get(`/customers/${customerId}/timeline`);
+  return res.data.data;
+};
+
 export const fetchJobs = async (): Promise<Job[]> => {
   const res = await api.get('/jobs');
   return res.data.data.jobs;
+};
+
+export const createJob = async (data: {
+  customerId: string;
+  title: string;
+  description?: string;
+  category?: string;
+  laborHours?: number;
+  quotedAmount?: number;
+  priority?: string;
+  status?: string;
+}): Promise<Job> => {
+  const res = await api.post('/jobs', data);
+  return res.data.data;
 };
 
 export const fetchTasks = async (): Promise<Task[]> => {

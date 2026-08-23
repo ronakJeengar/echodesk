@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchCustomers, fetchRecordings } from '../lib/api';
+import { fetchCustomers, fetchRecordings, fetchCustomerTimeline } from '../lib/api';
 import { Customer, Recording } from '../types';
 import { WorkOrderPdfModal } from '../components/WorkOrderPdfModal';
-import { Users, Search, Phone, MapPin, Mic, Briefcase, Plus, Calendar, ArrowUpRight, Printer } from 'lucide-react';
+import { AddCustomerModal } from '../components/AddCustomerModal';
+import { Users, Search, Phone, MapPin, Mic, Briefcase, Plus, Calendar, ArrowUpRight, Printer, X, Play, Clock, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const CustomersPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
   const [pdfRecording, setPdfRecording] = useState<Recording | null>(null);
   const navigate = useNavigate();
 
@@ -22,8 +24,13 @@ export const CustomersPage: React.FC = () => {
     queryFn: fetchRecordings,
   });
 
+  const { data: timelineData, isLoading: timelineLoading } = useQuery({
+    queryKey: ['customer-timeline', selectedCustomer?.id],
+    queryFn: () => (selectedCustomer ? fetchCustomerTimeline(selectedCustomer.id) : null),
+    enabled: !!selectedCustomer,
+  });
+
   const handleOpenPdfForCustomer = (cust: Customer) => {
-    // Find customer's latest voice recording or create a structured client work order draft
     const matchedRecording = recordings.find(
       (r) => r.customerId === cust.id || r.customer?.id === cust.id
     );
@@ -90,15 +97,25 @@ export const CustomersPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search clients, companies, phones..."
-            className="w-full bg-slate-900 border border-slate-700/80 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
-          />
+        <div className="flex items-center gap-3">
+          <div className="relative w-full sm:w-72">
+            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search clients, companies, phones..."
+              className="w-full bg-slate-900 border border-slate-700/80 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
+            />
+          </div>
+
+          <button
+            onClick={() => setIsAddCustomerOpen(true)}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs shadow-lg shadow-emerald-500/20 shrink-0 transition"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Client</span>
+          </button>
         </div>
       </div>
 
@@ -169,7 +186,7 @@ export const CustomersPage: React.FC = () => {
               <div className="flex items-center justify-between pt-4 mt-3 border-t border-slate-800 text-xs text-slate-400">
                 <span>{cust._count?.jobs || 0} Active Jobs</span>
                 <span className="text-emerald-400 font-medium flex items-center gap-0.5 group-hover:translate-x-0.5 transition">
-                  View Profile <ArrowUpRight className="w-3.5 h-3.5" />
+                  View Timeline <ArrowUpRight className="w-3.5 h-3.5" />
                 </span>
               </div>
             </div>
@@ -177,48 +194,114 @@ export const CustomersPage: React.FC = () => {
         </div>
       )}
 
-      {/* Customer Details Modal */}
+      {/* Customer Profile & Activity Timeline Modal */}
       {selectedCustomer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="glass-panel-glow bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5">
-            <div className="flex items-start justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-y-auto">
+          <div className="glass-panel-glow bg-slate-900 border border-slate-700/80 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-6 my-8">
+            <div className="flex items-start justify-between pb-3 border-b border-slate-800">
               <div>
-                <h2 className="text-xl font-bold text-white">{selectedCustomer.name}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-white">{selectedCustomer.name}</h2>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800/60">
+                    ACTIVE CLIENT
+                  </span>
+                </div>
                 {selectedCustomer.companyName && (
-                  <p className="text-sm text-slate-400">{selectedCustomer.companyName}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{selectedCustomer.companyName}</p>
                 )}
               </div>
               <button
                 onClick={() => setSelectedCustomer(null)}
                 className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800/80 space-y-2 text-sm">
-              {selectedCustomer.phone && (
-                <p className="text-slate-300">
-                  <strong className="text-slate-400">Phone:</strong> {selectedCustomer.phone}
-                </p>
-              )}
-              {selectedCustomer.address && (
-                <p className="text-slate-300">
-                  <strong className="text-slate-400">Address:</strong> {selectedCustomer.address}
-                </p>
-              )}
-              <p className="text-slate-300">
-                <strong className="text-slate-400">Voice Notes Count:</strong>{' '}
-                {selectedCustomer._count?.recordings || 0}
-              </p>
+            {/* Info Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+              <div>
+                <span className="text-slate-500 font-semibold uppercase">Phone</span>
+                <p className="text-slate-200 font-mono mt-0.5">{selectedCustomer.phone || 'N/A'}</p>
+              </div>
+              <div>
+                <span className="text-slate-500 font-semibold uppercase">Service Address</span>
+                <p className="text-slate-200 mt-0.5">{selectedCustomer.address || 'N/A'}</p>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Activity Timeline */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                Customer Voice Notes & Job Timeline
+              </h3>
+
+              {timelineLoading ? (
+                <p className="text-xs text-slate-500 py-4 text-center">Loading timeline...</p>
+              ) : (
+                <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                  {timelineData?.recordings?.length === 0 && timelineData?.jobs?.length === 0 ? (
+                    <p className="text-xs text-slate-500 py-4 text-center">No recorded debriefs yet.</p>
+                  ) : (
+                    <>
+                      {timelineData?.recordings?.map((rec: any) => (
+                        <div
+                          key={rec.id}
+                          onClick={() => {
+                            navigate(`/studio?id=${rec.id}`);
+                            setSelectedCustomer(null);
+                          }}
+                          className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 hover:border-emerald-500/40 hover:bg-slate-950 cursor-pointer transition flex items-center justify-between gap-3 group"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <Mic className="w-3.5 h-3.5 text-emerald-400" />
+                              <span className="text-xs font-bold text-white group-hover:text-emerald-400 transition">
+                                Voice Debrief ({rec.audioDurationSec?.toFixed(1)}s)
+                              </span>
+                              <span className="text-[10px] text-slate-500 font-mono">
+                                {new Date(rec.recordedAt || rec.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">
+                              {rec.extractedData?.executiveSummary || rec.rawTranscript}
+                            </p>
+                          </div>
+                          <Play className="w-3.5 h-3.5 text-emerald-400 shrink-0 fill-current opacity-0 group-hover:opacity-100 transition" />
+                        </div>
+                      ))}
+
+                      {timelineData?.jobs?.map((job: any) => (
+                        <div
+                          key={job.id}
+                          className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-between gap-3 text-xs"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Briefcase className="w-3.5 h-3.5 text-cyan-400" />
+                            <span className="font-semibold text-white">{job.title}</span>
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">
+                              {job.status}
+                            </span>
+                          </div>
+                          {job.quotedAmount && (
+                            <span className="font-mono font-bold text-emerald-400">
+                              ${job.quotedAmount.toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
               <button
-                onClick={() => {
-                  handleOpenPdfForCustomer(selectedCustomer);
-                }}
-                className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs border border-emerald-500/30 transition"
+                onClick={() => handleOpenPdfForCustomer(selectedCustomer)}
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs border border-emerald-500/30 transition"
               >
                 <Printer className="w-4 h-4" />
                 <span>Print Work Order PDF</span>
@@ -229,7 +312,7 @@ export const CustomersPage: React.FC = () => {
                   navigate('/studio');
                   setSelectedCustomer(null);
                 }}
-                className="py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs shadow-lg shadow-emerald-500/20 transition"
+                className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs shadow-lg shadow-emerald-500/20 transition"
               >
                 Open Audio Studio
               </button>
@@ -237,6 +320,12 @@ export const CustomersPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Add Customer Modal */}
+      <AddCustomerModal
+        isOpen={isAddCustomerOpen}
+        onClose={() => setIsAddCustomerOpen(false)}
+      />
 
       {/* PDF Modal */}
       <WorkOrderPdfModal

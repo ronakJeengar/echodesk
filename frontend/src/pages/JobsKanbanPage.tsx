@@ -3,11 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchJobs, fetchTasks, toggleTask } from '../lib/api';
 import { Job, Task, Recording } from '../types';
 import { WorkOrderPdfModal } from '../components/WorkOrderPdfModal';
-import { Kanban, Calendar, Clock, DollarSign, CheckCircle2, User, AlertCircle, Printer } from 'lucide-react';
+import { CreateJobModal } from '../components/CreateJobModal';
+import { Kanban, Calendar, Clock, DollarSign, CheckCircle2, User, AlertCircle, Printer, Plus } from 'lucide-react';
 
 export const JobsKanbanPage: React.FC = () => {
   const queryClient = useQueryClient();
   const [pdfJobRecording, setPdfJobRecording] = useState<Recording | null>(null);
+  const [isCreateJobOpen, setIsCreateJobOpen] = useState(false);
 
   const { data: jobs = [], isLoading: jobsLoading } = useQuery({
     queryKey: ['jobs'],
@@ -95,6 +97,14 @@ export const JobsKanbanPage: React.FC = () => {
             Kanban pipeline automatically updated as technicians record on-site voice debriefs
           </p>
         </div>
+
+        <button
+          onClick={() => setIsCreateJobOpen(true)}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs shadow-lg shadow-emerald-500/20 shrink-0 transition"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Dispatch New Job</span>
+        </button>
       </div>
 
       {/* Kanban Board */}
@@ -230,6 +240,12 @@ export const JobsKanbanPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Dispatch Job Modal */}
+      <CreateJobModal
+        isOpen={isCreateJobOpen}
+        onClose={() => setIsCreateJobOpen(false)}
+      />
 
       {/* PDF Modal */}
       <WorkOrderPdfModal
