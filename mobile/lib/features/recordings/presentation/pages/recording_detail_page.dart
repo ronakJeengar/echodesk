@@ -14,6 +14,7 @@ import '../../../customers/presentation/widgets/review_request_sheet.dart';
 import '../../../safety/presentation/widgets/safety_audit_sheet.dart';
 import '../widgets/speech_analytics_sheet.dart';
 import '../../../calculators/presentation/widgets/margin_estimator_sheet.dart';
+import '../../../localization/presentation/widgets/language_translation_sheet.dart';
 
 final recordingDetailFutureProvider =
     FutureProvider.autoDispose.family<RecordingModel?, String>((ref, recordingId) async {
@@ -762,6 +763,32 @@ class _RecordingDetailPageState extends ConsumerState<RecordingDetailPage> {
                     label: Text(
                       'AI Safety & Code Compliance Audit',
                       style: AppTypography.button.copyWith(color: AppColors.secondary),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // AI Multi-Language Translation Button
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      LanguageTranslationSheet.show(
+                        context,
+                        executiveSummary: data.executiveSummary,
+                        customerName: data.customerInfo?['name'] as String? ?? 'Valued Customer',
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.primary, width: 1.2),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    icon: const Icon(Icons.translate_rounded, size: 18, color: AppColors.primary),
+                    label: Text(
+                      'AI Multi-Language Translator (ES / FR / PT)',
+                      style: AppTypography.button.copyWith(color: AppColors.primary),
                     ),
                   ),
                 ),

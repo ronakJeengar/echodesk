@@ -7,6 +7,7 @@ import { CustomerFollowUpComposerModal } from './CustomerFollowUpComposerModal';
 import { SafetyAuditModal } from './SafetyAuditModal';
 import { MaterialMarginEstimatorModal } from './MaterialMarginEstimatorModal';
 import { CustomerReviewRequestModal } from './CustomerReviewRequestModal';
+import { LanguageTranslationModal } from './LanguageTranslationModal';
 import {
   User,
   Wrench,
@@ -24,7 +25,8 @@ import {
   ShieldCheck,
   HardHat,
   TrendingUp,
-  Star
+  Star,
+  Languages
 } from 'lucide-react';
 
 interface EntityInspectorProps {
@@ -49,6 +51,7 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
   const [isSafetyAuditOpen, setIsSafetyAuditOpen] = useState(false);
   const [isMarginEstimatorOpen, setIsMarginEstimatorOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isTranslateOpen, setIsTranslateOpen] = useState(false);
   const [signedBy, setSignedBy] = useState<string | null>(null);
   const [promptText, setPromptText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -326,15 +329,32 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
           </button>
 
           <button
-            onClick={() => setIsAdjustOpen(true)}
-            disabled={isLoading}
+            onClick={() => setIsTranslateOpen(true)}
             className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
           >
-            <Edit3 className="w-4 h-4 text-emerald-400" />
-            AI Prompt Correction
+            <Languages className="w-4 h-4 text-cyan-400" />
+            Bilingual Translation
           </button>
         </div>
+
+        <button
+          onClick={() => setIsAdjustOpen(true)}
+          disabled={isLoading}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-medium text-xs border border-slate-750 transition"
+        >
+          <Edit3 className="w-4 h-4 text-emerald-400" />
+          AI Prompt Extraction Correction
+        </button>
       </div>
+
+      {/* AI Multi-Language Translation Modal */}
+      <LanguageTranslationModal
+        isOpen={isTranslateOpen}
+        onClose={() => setIsTranslateOpen(false)}
+        executiveSummary={extractedData.executiveSummary}
+        rawTranscript={extractedData.executiveSummary}
+        customerName={extractedData.customerInfo?.name}
+      />
 
       {/* Customer 5-Star Review Request & QR Modal */}
       <CustomerReviewRequestModal
