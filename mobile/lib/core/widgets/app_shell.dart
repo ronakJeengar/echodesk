@@ -24,6 +24,10 @@ class AppShell extends StatelessWidget {
               initialLocation: index == navigationShell.currentIndex,
             );
           },
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: AppColors.surface,
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: AppColors.textMuted,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.dashboard_outlined),
@@ -39,6 +43,11 @@ class AppShell extends StatelessWidget {
               icon: Icon(Icons.assignment_outlined),
               activeIcon: Icon(Icons.assignment_rounded),
               label: 'Jobs',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.insights_outlined),
+              activeIcon: Icon(Icons.insights_rounded),
+              label: 'Analytics',
             ),
           ],
         ),

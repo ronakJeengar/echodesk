@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/analytics/presentation/pages/analytics_page.dart';
 import '../../features/customers/presentation/pages/customers_page.dart';
 import '../../features/customers/presentation/pages/customer_detail_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
@@ -45,6 +46,16 @@ final GoRouter appRouter = GoRouter(
               path: '/jobs',
               pageBuilder: (context, state) => const NoTransitionPage(
                 child: JobsPage(),
+              ),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/analytics',
+              pageBuilder: (context, state) => const NoTransitionPage(
+                child: AnalyticsPage(),
               ),
             ),
           ],

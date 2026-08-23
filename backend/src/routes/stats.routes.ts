@@ -7,3 +7,4 @@ export const statsRouter = Router();
 statsRouter.use(authenticate);
 
 statsRouter.get('/', StatsController.getStats);
+statsRouter.get('/analytics', StatsController.getAnalytics);

@@ -18,4 +18,19 @@ export class StatsController {
       next(error);
     }
   }
+
+  static async getAnalytics(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const workspaceId = req.workspaceId;
+      if (!workspaceId) throw new AppError('Workspace context is required', 400);
+
+      const analytics = await CRMService.getWorkspaceAnalytics(workspaceId);
+      res.status(200).json({
+        success: true,
+        data: analytics,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

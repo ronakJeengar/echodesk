@@ -183,3 +183,19 @@ export const sendInvoiceToCustomer = async (
   const res = await api.post(`/recordings/${recordingId}/send-invoice`, params);
   return res.data;
 };
+
+export const fetchAnalytics = async (): Promise<{
+  kpis: {
+    totalQuotedRevenue: number;
+    averageJobValue: number;
+    averageLaborHours: number;
+    taskCompletionRate: number;
+    activeJobsCount: number;
+  };
+  tradeBreakdown: Array<{ name: string; count: number; percentage: number }>;
+  topParts: Array<{ name: string; quantity: number; totalCost: number }>;
+  revenueTrends: Array<{ period: string; revenue: number; jobs: number }>;
+}> => {
+  const res = await api.get('/stats/analytics');
+  return res.data.data;
+};
