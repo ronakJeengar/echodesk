@@ -1,7 +1,15 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 class ApiEndpoints {
   ApiEndpoints._();
 
-  static const String baseUrl = 'http://localhost:5001/api/v1';
+  static String get baseUrl {
+    if (!kIsWeb && Platform.isAndroid) {
+      return 'http://10.0.2.2:5001/api/v1';
+    }
+    return 'http://localhost:5001/api/v1';
+  }
 
   // Auth
   static const String login = '/auth/login';
