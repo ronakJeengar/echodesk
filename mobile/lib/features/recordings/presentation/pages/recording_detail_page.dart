@@ -9,6 +9,7 @@ import '../../domain/models/recording_model.dart';
 import '../providers/recording_provider.dart';
 import '../widgets/send_invoice_modal.dart';
 import '../widgets/signature_modal.dart';
+import '../../../customers/presentation/widgets/follow_up_composer_sheet.dart';
 
 final recordingDetailFutureProvider =
     FutureProvider.autoDispose.family<RecordingModel?, String>((ref, recordingId) async {
@@ -644,6 +645,33 @@ class _RecordingDetailPageState extends ConsumerState<RecordingDetailPage> {
                     label: Text(
                       'Send Invoice to Customer (Email/SMS)',
                       style: AppTypography.button.copyWith(color: Colors.black),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // AI Follow-Up Message Button
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      FollowUpComposerSheet.show(
+                        context,
+                        customerName: data.customerInfo?['name'] as String? ?? 'Valued Customer',
+                        customerPhone: data.customerInfo?['phone'] as String?,
+                        jobSummary: data.executiveSummary,
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.primary, width: 1.2),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18, color: AppColors.primary),
+                    label: Text(
+                      'AI Follow-Up Message (SMS / Email)',
+                      style: AppTypography.button.copyWith(color: AppColors.primary),
                     ),
                   ),
                 ),

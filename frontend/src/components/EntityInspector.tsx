@@ -3,6 +3,7 @@ import { ExtractedData, Recording } from '../types';
 import { printWorkOrderPdf } from '../lib/pdf';
 import { SendInvoiceModal } from './SendInvoiceModal';
 import { SignatureCaptureModal } from './SignatureCaptureModal';
+import { CustomerFollowUpComposerModal } from './CustomerFollowUpComposerModal';
 import {
   User,
   Wrench,
@@ -15,7 +16,8 @@ import {
   FileText,
   Send,
   PenTool,
-  CheckCircle2
+  CheckCircle2,
+  MessageSquare
 } from 'lucide-react';
 
 interface EntityInspectorProps {
@@ -36,6 +38,7 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
   const [isAdjustOpen, setIsAdjustOpen] = useState(false);
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isSignatureOpen, setIsSignatureOpen] = useState(false);
+  const [isFollowUpOpen, setIsFollowUpOpen] = useState(false);
   const [signedBy, setSignedBy] = useState<string | null>(null);
   const [promptText, setPromptText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -269,23 +272,40 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <button
+            onClick={() => setIsFollowUpOpen(true)}
+            className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
+          >
+            <MessageSquare className="w-4 h-4 text-emerald-400" />
+            AI Follow-Up Message
+          </button>
+
+          <button
             onClick={handlePrintPdf}
             className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
           >
             <Printer className="w-4 h-4" />
             Print Work Order PDF
           </button>
-
-          <button
-            onClick={() => setIsAdjustOpen(true)}
-            disabled={isLoading}
-            className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
-          >
-            <Edit3 className="w-4 h-4 text-emerald-400" />
-            AI Correction Prompt
-          </button>
         </div>
+
+        <button
+          onClick={() => setIsAdjustOpen(true)}
+          disabled={isLoading}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-medium text-xs border border-slate-750 transition"
+        >
+          <Edit3 className="w-4 h-4 text-emerald-400" />
+          AI Prompt Extraction Correction
+        </button>
       </div>
+
+      {/* AI Post-Service Follow-Up Composer Modal */}
+      <CustomerFollowUpComposerModal
+        isOpen={isFollowUpOpen}
+        onClose={() => setIsFollowUpOpen(false)}
+        customerName={extractedData.customerInfo?.name || 'Customer'}
+        customerPhone={extractedData.customerInfo?.phone || '(555) 234-5678'}
+        jobSummary={extractedData.executiveSummary}
+      />
 
       {/* Digital Signature Capture Modal */}
       <SignatureCaptureModal
