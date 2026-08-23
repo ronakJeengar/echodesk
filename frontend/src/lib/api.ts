@@ -32,6 +32,49 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+export async function login(email: string, password: string) {
+  const res = await axios.post('/api/v1/auth/login', {
+    email: email.trim().toLowerCase(),
+    password,
+  });
+
+  if (res.data?.data?.accessToken) {
+    const { accessToken, workspace } = res.data.data;
+    localStorage.setItem('echodesk_token', accessToken);
+    if (workspace?.id) {
+      localStorage.setItem('echodesk_workspace_id', workspace.id);
+    }
+    return res.data.data;
+  }
+  return res.data;
+}
+
+export async function register(data: {
+  fullName: string;
+  email: string;
+  password: string;
+  companyName: string;
+  role?: string;
+}) {
+  const res = await axios.post('/api/v1/auth/register', {
+    fullName: data.fullName.trim(),
+    email: data.email.trim().toLowerCase(),
+    password: data.password,
+    companyName: data.companyName.trim(),
+    role: data.role || 'TECHNICIAN',
+  });
+
+  if (res.data?.data?.accessToken) {
+    const { accessToken, workspace } = res.data.data;
+    localStorage.setItem('echodesk_token', accessToken);
+    if (workspace?.id) {
+      localStorage.setItem('echodesk_workspace_id', workspace.id);
+    }
+    return res.data.data;
+  }
+  return res.data;
+}
+
 // Default seed login helper if no token exists
 export async function ensureAuthenticated() {
   const existingToken = localStorage.getItem('echodesk_token');

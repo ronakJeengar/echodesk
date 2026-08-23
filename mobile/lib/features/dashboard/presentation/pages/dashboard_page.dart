@@ -80,6 +80,11 @@ class DashboardPage extends ConsumerWidget {
             onPressed: () => NotificationsSheet.show(context),
           ),
           IconButton(
+            icon: const Icon(Icons.account_circle_outlined, color: AppColors.primary),
+            tooltip: 'Account & Switch User',
+            onPressed: () => context.push('/login'),
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh_rounded, color: AppColors.textSecondary),
             onPressed: () {
               ref.invalidate(dashboardStatsProvider);

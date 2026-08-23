@@ -5,7 +5,8 @@ import { fetchNotifications, AppNotification } from '../lib/api';
 import { TradeCalculatorsModal } from './TradeCalculatorsModal';
 import { TechniciansRosterModal } from './TechniciansRosterModal';
 import { EquipmentWarrantyScannerModal } from './EquipmentWarrantyScannerModal';
-import { Mic, Bell, User, CheckCircle2, FileText, PenTool, Sparkles, X, Clock, Calculator, Users, ScanBarcode } from 'lucide-react';
+import { AuthModal } from './AuthModal';
+import { Mic, Bell, User, CheckCircle2, FileText, PenTool, Sparkles, X, Clock, Calculator, Users, ScanBarcode, LogIn } from 'lucide-react';
 
 interface NavbarProps {
   onOpenUploader: () => void;
@@ -16,6 +17,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenUploader }) => {
   const [isCalcOpen, setIsCalcOpen] = useState(false);
   const [isRosterOpen, setIsRosterOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const navigate = useNavigate();
 
   const { data } = useQuery({
@@ -181,13 +183,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenUploader }) => {
         </div>
 
         {/* User profile badge */}
-        <div className="flex items-center gap-2.5 pl-2 border-l border-slate-800">
-          <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
-            <User className="w-4 h-4" />
+        <div
+          onClick={() => setIsAuthOpen(true)}
+          className="flex items-center gap-2.5 pl-2 border-l border-slate-800 cursor-pointer hover:opacity-85 transition group"
+          title="Account & Workspace Settings (Click to Switch/Sign In)"
+        >
+          <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 group-hover:border-cyan-500/50 flex items-center justify-center text-slate-300 transition">
+            <User className="w-4 h-4 text-cyan-400" />
           </div>
           <div className="hidden lg:block text-left">
-            <p className="text-xs font-semibold text-white leading-tight">Alex Miller</p>
-            <p className="text-[11px] text-slate-400 leading-tight">Lead Field Tech</p>
+            <p className="text-xs font-semibold text-white leading-tight flex items-center gap-1">
+              <span>Alex Miller</span>
+              <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-1 rounded">PRO</span>
+            </p>
+            <p className="text-[11px] text-slate-400 leading-tight">Lead Field Tech · Switch</p>
           </div>
         </div>
       </div>
@@ -205,6 +214,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenUploader }) => {
       <EquipmentWarrantyScannerModal
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
+      />
+
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
       />
     </header>
   );
