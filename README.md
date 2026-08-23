@@ -5,8 +5,14 @@
 [![Architecture](https://img.shields.io/badge/Architecture-Event--Driven-blue.svg)](docs/ARCHITECTURE.md)
 [![Prisma](https://img.shields.io/badge/ORM-Prisma%207-2D3748.svg)](docs/DATABASE_SCHEMA.md)
 [![Frontend](https://img.shields.io/badge/Web-React%2019-61DAFB.svg)](docs/ARCHITECTURE.md)
-[![Mobile](https://img.shields.io/badge/Mobile-Flutter-02569B.svg)](docs/ARCHITECTURE.md)
+[![Training Manual](https://img.shields.io/badge/Training%20Manual-User%20Guide-emerald.svg)](USER_TRAINING_MANUAL.md)
 [![Tests](https://img.shields.io/badge/Tests-21%2F21%20Passing-brightgreen.svg)](#-testing--verification)
+
+---
+
+## 📖 Complete User Training Manual
+👉 **Looking for full step-by-step training on how to use the Web Dashboard and Mobile App?**  
+Read our [Complete User Training & Operations Manual](USER_TRAINING_MANUAL.md) covering field voice recording, offline SQLite vault sync, diagnostic calculators, equipment tag decoders, and customer tracking portals.
 
 ---
 
