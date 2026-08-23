@@ -10,6 +10,7 @@ import '../providers/recording_provider.dart';
 import '../widgets/send_invoice_modal.dart';
 import '../widgets/signature_modal.dart';
 import '../../../customers/presentation/widgets/follow_up_composer_sheet.dart';
+import '../../../safety/presentation/widgets/safety_audit_sheet.dart';
 
 final recordingDetailFutureProvider =
     FutureProvider.autoDispose.family<RecordingModel?, String>((ref, recordingId) async {
@@ -705,6 +706,32 @@ class _RecordingDetailPageState extends ConsumerState<RecordingDetailPage> {
                     label: Text(
                       'Sign & Approve Work Order',
                       style: AppTypography.button.copyWith(color: AppColors.primaryLight),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // Safety & Code Compliance Audit Button
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      SafetyAuditSheet.show(
+                        context,
+                        industry: 'HVAC',
+                        workSummary: data.executiveSummary,
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.secondary, width: 1.2),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    icon: const Icon(Icons.verified_user_rounded, size: 18, color: AppColors.secondary),
+                    label: Text(
+                      'AI Safety & Code Compliance Audit',
+                      style: AppTypography.button.copyWith(color: AppColors.secondary),
                     ),
                   ),
                 ),

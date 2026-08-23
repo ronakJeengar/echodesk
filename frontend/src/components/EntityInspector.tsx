@@ -4,6 +4,7 @@ import { printWorkOrderPdf } from '../lib/pdf';
 import { SendInvoiceModal } from './SendInvoiceModal';
 import { SignatureCaptureModal } from './SignatureCaptureModal';
 import { CustomerFollowUpComposerModal } from './CustomerFollowUpComposerModal';
+import { SafetyAuditModal } from './SafetyAuditModal';
 import {
   User,
   Wrench,
@@ -17,7 +18,9 @@ import {
   Send,
   PenTool,
   CheckCircle2,
-  MessageSquare
+  MessageSquare,
+  ShieldCheck,
+  HardHat
 } from 'lucide-react';
 
 interface EntityInspectorProps {
@@ -39,6 +42,7 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isSignatureOpen, setIsSignatureOpen] = useState(false);
   const [isFollowUpOpen, setIsFollowUpOpen] = useState(false);
+  const [isSafetyAuditOpen, setIsSafetyAuditOpen] = useState(false);
   const [signedBy, setSignedBy] = useState<string | null>(null);
   const [promptText, setPromptText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -272,13 +276,23 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <button
+            onClick={() => setIsSafetyAuditOpen(true)}
+            className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
+          >
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            Safety & Code Audit
+          </button>
+
+          <button
             onClick={() => setIsFollowUpOpen(true)}
             className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
           >
-            <MessageSquare className="w-4 h-4 text-emerald-400" />
+            <MessageSquare className="w-4 h-4 text-cyan-400" />
             AI Follow-Up Message
           </button>
+        </div>
 
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <button
             onClick={handlePrintPdf}
             className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
@@ -286,17 +300,24 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
             <Printer className="w-4 h-4" />
             Print Work Order PDF
           </button>
-        </div>
 
-        <button
-          onClick={() => setIsAdjustOpen(true)}
-          disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-medium text-xs border border-slate-750 transition"
-        >
-          <Edit3 className="w-4 h-4 text-emerald-400" />
-          AI Prompt Extraction Correction
-        </button>
+          <button
+            onClick={() => setIsAdjustOpen(true)}
+            disabled={isLoading}
+            className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
+          >
+            <Edit3 className="w-4 h-4 text-emerald-400" />
+            AI Correction Prompt
+          </button>
+        </div>
       </div>
+
+      {/* AI Safety & Code Compliance Audit Modal */}
+      <SafetyAuditModal
+        isOpen={isSafetyAuditOpen}
+        onClose={() => setIsSafetyAuditOpen(false)}
+        executiveSummary={extractedData.executiveSummary}
+      />
 
       {/* AI Post-Service Follow-Up Composer Modal */}
       <CustomerFollowUpComposerModal
