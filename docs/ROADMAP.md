@@ -4,7 +4,7 @@
 ---
 
 ## 🎯 Phase 1: Core Foundation & Ingestion Backend (Weeks 1–2)
-- [x] **Repository Setup & Monorepo Structure:** `/backend`, `/mobile`, `/docs`, `docker-compose.yml`.
+- [x] **Repository Setup & Monorepo Structure:** `/backend`, `/mobile`, `/frontend`, `/docs`, `docker-compose.yml`.
 - [x] **PostgreSQL & Prisma 7 Initial Schema:** User, Workspace, Membership, Customer, Recording, Job, Task, ExtractedData, ActivityLog.
 - [x] **Authentication & RBAC Middleware:** JWT rotation, HttpOnly cookies, Workspace scoping, Zod validation.
 - [x] **S3 / Cloudflare R2 Audio Ingestion:** Presigned upload URLs, audio metadata extraction (duration, format).
@@ -24,18 +24,22 @@
 ## 📱 Phase 3: Flutter Mobile App — Voice-First Client (Weeks 4–5)
 - [x] **Clean Architecture Setup:** Core, Data, Domain, Presentation layers with Riverpod.
 - [x] **One-Tap Voice Recording UI:** Pulse animation, live audio visualizer, pause/resume.
-- [ ] **Offline Audio Vault (SQLite):** Store un-synced audio files locally when off-grid; auto-upload upon reconnection.
+- [x] **Offline Audio Vault (SQLite):** Store un-synced audio files locally when off-grid (`sqflite`); auto-upload upon reconnection.
 - [x] **Extraction Preview & Quick-Edit Sheet:** Instant visual cards for extracted parts, costs, tasks, and follow-ups.
 - [x] **Customer Quick Search & Job History:** Fast, responsive field mobile view.
+- [x] **Real-Time WebSockets Integration:** Live Socket.IO progress streaming in mobile client.
 
 ---
 
 ## 💻 Phase 4: React 19 Web Dashboard (Weeks 5–6)
-- [ ] **Vite + React 19 + Tailwind CSS v4 Setup:** Matching dark/light design tokens.
-- [ ] **Interactive Waveform Player (Wavesurfer.js):** Click-to-jump word timestamps in transcripts.
-- [ ] **Customer CRM Timeline View:** Unified activity feed for all customer notes, jobs, and estimates.
-- [ ] **Job & Task Kanban Board:** Drag-and-drop workflow (`@hello-pangea/dnd` or TanStack Table).
-- [ ] **Team Activity & Operational Metrics:** FL Chart / Recharts showing weekly voice hours logged and jobs completed.
+- [x] **Vite + React 19 + Tailwind CSS Setup:** Matching dark tech theme with glassmorphism design tokens.
+- [x] **Interactive Waveform Player (Wavesurfer.js):** Audio playback with live playback speed, seek controls, and waveform canvas.
+- [x] **Word-Synchronized Transcript Viewer:** Click-to-jump word timestamps in transcripts syncing audio to that exact moment.
+- [x] **AI Extracted CRM Entity Inspector:** Full breakdown of customer info, diagnosis summary, parts used, financials, and action items.
+- [x] **One-Click AI Correction Drawer:** In-browser prompt adjustments for instant re-extraction.
+- [x] **Customer CRM Directory:** Searchable roster with voice note timeline drawer.
+- [x] **Job & Task Kanban Board:** Column pipeline (`Scheduled`, `In Progress`, `Completed`) with interactive task checkboxes.
+- [x] **In-Browser Voice Recording & File Uploader:** Direct audio capture modal with real-time Socket.IO pipeline progress bar.
 
 ---
 
