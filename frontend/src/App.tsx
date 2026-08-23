@@ -6,6 +6,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { StudioPage } from './pages/StudioPage';
 import { CustomersPage } from './pages/CustomersPage';
 import { JobsKanbanPage } from './pages/JobsKanbanPage';
+import { SettingsPage } from './pages/SettingsPage';
 import { AudioUploaderModal } from './components/AudioUploaderModal';
 import { ensureAuthenticated } from './lib/api';
 
@@ -40,6 +41,7 @@ export const App: React.FC = () => {
             <Route path="/studio" element={<StudioPage />} />
             <Route path="/customers" element={<CustomersPage />} />
             <Route path="/jobs" element={<JobsKanbanPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </main>
       </div>

@@ -1,6 +1,16 @@
 import axios from 'axios';
 import { DashboardStats, Recording, Customer, Job, Task } from '../types';
 
+export interface WebhookSubscription {
+  id: string;
+  workspaceId: string;
+  url: string;
+  secret: string;
+  events: string[];
+  isActive: boolean;
+  createdAt: string;
+}
+
 export const api = axios.create({
   baseURL: '/api/v1',
   headers: {
@@ -133,5 +143,31 @@ export const requestPresignedUrl = async (params: {
 
 export const processRecording = async (recordingId: string, params?: { jobCategory?: string; customerId?: string }) => {
   const res = await api.post(`/recordings/${recordingId}/process`, params || {});
+  return res.data.data;
+};
+
+// Webhook APIs
+export const fetchWebhooks = async (): Promise<WebhookSubscription[]> => {
+  const res = await api.get('/workspaces/webhooks');
+  return res.data.data.webhooks;
+};
+
+export const createWebhook = async (data: {
+  url: string;
+  events: string[];
+}): Promise<WebhookSubscription> => {
+  const res = await api.post('/workspaces/webhooks', data);
+  return res.data.data.webhook;
+};
+
+export const deleteWebhook = async (id: string): Promise<void> => {
+  await api.delete(`/workspaces/webhooks/${id}`);
+};
+
+export const testPingWebhook = async (params: {
+  url: string;
+  secret?: string;
+}): Promise<{ success: boolean; statusCode: number; message: string }> => {
+  const res = await api.post('/workspaces/webhooks/test-ping', params);
   return res.data.data;
 };

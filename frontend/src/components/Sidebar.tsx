@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Radio, Users, Kanban, FileAudio } from 'lucide-react';
+import { LayoutDashboard, Radio, Users, Kanban, Settings } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
   const navItems = [
@@ -8,6 +8,7 @@ export const Sidebar: React.FC = () => {
     { to: '/studio', label: 'Audio Studio', icon: Radio },
     { to: '/customers', label: 'Customers CRM', icon: Users },
     { to: '/jobs', label: 'Jobs & Tasks', icon: Kanban },
+    { to: '/settings', label: 'Webhooks & Settings', icon: Settings },
   ];
 
   return (

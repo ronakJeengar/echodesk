@@ -7,6 +7,7 @@ import { logger } from '../utils/logger.js';
 import { sttService } from '../services/stt.service.js';
 import { llmService } from '../services/llm.service.js';
 import { EntityUpsertService } from '../services/entity-upsert.service.js';
+import { webhookService } from '../services/webhook.service.js';
 import { socketServer } from '../socket/socket.server.js';
 import { ProcessingStatus } from '@prisma/client';
 
@@ -102,6 +103,18 @@ export async function processAudioJob(data: AudioProcessingJobData): Promise<any
       workspaceId,
       recordingId,
       data: finalizedRecording,
+    });
+
+    // 5. Dispatch Outbound Webhook to subscribed endpoints (Zapier, QuickBooks, ServiceTitan)
+    webhookService.dispatch(workspaceId, 'recording.completed', {
+      recordingId: finalizedRecording.id,
+      audioDurationSec: finalizedRecording.audioDurationSec,
+      transcript: finalizedRecording.rawTranscript,
+      extractedData: finalizedRecording.extractedData,
+      customer: finalizedRecording.customer,
+      job: finalizedRecording.job,
+      tasks: finalizedRecording.tasks,
+      completedAt: new Date().toISOString(),
     });
 
     if (finalizedRecording.customerId) {
