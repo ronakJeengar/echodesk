@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ExtractedData } from '../types';
+import { ExtractedData, Recording } from '../types';
+import { printWorkOrderPdf } from '../lib/pdf';
 import {
   User,
   Wrench,
@@ -8,19 +9,22 @@ import {
   CalendarCheck,
   Sparkles,
   Edit3,
-  CheckCircle2,
-  AlertCircle
+  Printer,
+  FileText
 } from 'lucide-react';
 
 interface EntityInspectorProps {
   extractedData?: ExtractedData;
   recordingId: string;
+  recording?: Recording;
   onReExtract: (promptAdjustment: string) => Promise<void>;
   isLoading?: boolean;
 }
 
 export const EntityInspector: React.FC<EntityInspectorProps> = ({
   extractedData,
+  recordingId,
+  recording,
   onReExtract,
   isLoading,
 }) => {
@@ -36,6 +40,24 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
       </div>
     );
   }
+
+  const handlePrintPdf = () => {
+    const recToPrint: Recording = recording || {
+      id: recordingId,
+      workspaceId: '',
+      audioUrl: '',
+      audioDurationSec: 45.0,
+      audioFormat: 'm4a',
+      fileSizeBytes: 1048576,
+      status: 'COMPLETED',
+      wordTimestamps: [],
+      extractedData,
+      recordedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    printWorkOrderPdf(recToPrint);
+  };
 
   const handleAdjustSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -210,15 +232,23 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
         </div>
       )}
 
-      {/* Actions / AI Adjust Button */}
-      <div className="pt-2">
+      {/* Actions: PDF Export & One-Click AI Correction Buttons */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+        <button
+          onClick={handlePrintPdf}
+          className="flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-semibold text-sm border border-emerald-500/30 transition"
+        >
+          <Printer className="w-4 h-4" />
+          Print / Save PDF Work Order
+        </button>
+
         <button
           onClick={() => setIsAdjustOpen(true)}
           disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-sm border border-slate-700 transition"
+          className="flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-sm border border-slate-700 transition"
         >
           <Edit3 className="w-4 h-4 text-emerald-400" />
-          One-Click AI Correction (Adjust Prompt)
+          Adjust Prompt (AI Edit)
         </button>
       </div>
 

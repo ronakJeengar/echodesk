@@ -117,6 +117,7 @@ export const StudioPage: React.FC = () => {
             <EntityInspector
               extractedData={activeRecording.extractedData}
               recordingId={activeRecording.id}
+              recording={activeRecording}
               onReExtract={async (prompt) => {
                 await reExtractMutation.mutateAsync(prompt);
               }}

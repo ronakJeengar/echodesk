@@ -36,6 +36,10 @@ dependencies:
   record: ^5.1.2
   audioplayers: ^6.0.0
 
+  # PDF Generation & Printing
+  pdf: ^3.11.1
+  printing: ^5.13.2
+
   # Serialization & Utilities
   freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0

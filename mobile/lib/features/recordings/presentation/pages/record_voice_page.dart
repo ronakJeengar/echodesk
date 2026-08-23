@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../domain/models/recording_model.dart';
+import '../../../../core/pdf/work_order_pdf_service.dart';
 import '../providers/recording_provider.dart';
 
 class RecordVoicePage extends ConsumerStatefulWidget {
@@ -182,7 +183,50 @@ class _RecordVoicePageState extends ConsumerState<RecordVoicePage>
                       AppColors.warning,
                     ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
+
+                  // PDF Work Order Generation Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        final currentRec = ref.read(voiceRecordingProvider).currentRecording;
+                        if (currentRec != null) {
+                          await WorkOrderPdfService.previewAndPrint(
+                            context: context,
+                            recording: currentRec,
+                          );
+                        } else {
+                          // Generate from temporary extracted data
+                          final tempRec = RecordingModel(
+                            id: 'draft-${DateTime.now().millisecondsSinceEpoch}',
+                            workspaceId: '',
+                            audioUrl: '',
+                            audioDurationSec: 45.0,
+                            status: 'COMPLETED',
+                            extractedData: data,
+                            recordedAt: DateTime.now().toIso8601String(),
+                          );
+                          await WorkOrderPdfService.previewAndPrint(
+                            context: context,
+                            recording: tempRec,
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.picture_as_pdf_rounded, size: 18, color: AppColors.primary),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: AppColors.primary),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      label: Text(
+                        'Generate & Share PDF Work Order',
+                        style: AppTypography.button.copyWith(color: AppColors.primary),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
 
                   Row(
                     children: [
