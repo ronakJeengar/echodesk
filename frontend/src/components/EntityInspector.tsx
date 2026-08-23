@@ -9,6 +9,7 @@ import { MaterialMarginEstimatorModal } from './MaterialMarginEstimatorModal';
 import { CustomerReviewRequestModal } from './CustomerReviewRequestModal';
 import { LanguageTranslationModal } from './LanguageTranslationModal';
 import { MaintenanceAgreementModal } from './MaintenanceAgreementModal';
+import { SitePhotoAnnotationModal } from './SitePhotoAnnotationModal';
 import {
   User,
   Wrench,
@@ -28,7 +29,8 @@ import {
   TrendingUp,
   Star,
   Languages,
-  Award
+  Award,
+  Camera
 } from 'lucide-react';
 
 interface EntityInspectorProps {
@@ -55,6 +57,7 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isTranslateOpen, setIsTranslateOpen] = useState(false);
   const [isPmaModalOpen, setIsPmaModalOpen] = useState(false);
+  const [isPhotosOpen, setIsPhotosOpen] = useState(false);
   const [signedBy, setSignedBy] = useState<string | null>(null);
   const [promptText, setPromptText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -306,11 +309,11 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <button
-            onClick={() => setIsFollowUpOpen(true)}
+            onClick={() => setIsPhotosOpen(true)}
             className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
           >
-            <MessageSquare className="w-4 h-4 text-emerald-400" />
-            AI Follow-Up Message
+            <Camera className="w-4 h-4 text-cyan-400" />
+            Site Photos & AI Tags
           </button>
 
           <button
@@ -324,19 +327,19 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <button
+            onClick={() => setIsFollowUpOpen(true)}
+            className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
+          >
+            <MessageSquare className="w-4 h-4 text-emerald-400" />
+            AI Follow-Up Message
+          </button>
+
+          <button
             onClick={() => setIsTranslateOpen(true)}
             className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
           >
             <Languages className="w-4 h-4 text-cyan-400" />
             Bilingual Translation
-          </button>
-
-          <button
-            onClick={() => setIsPmaModalOpen(true)}
-            className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
-          >
-            <Award className="w-4 h-4 text-amber-400" />
-            PMA Service Agreement
           </button>
         </div>
 
@@ -350,15 +353,31 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
           </button>
 
           <button
-            onClick={() => setIsAdjustOpen(true)}
-            disabled={isLoading}
+            onClick={() => setIsPmaModalOpen(true)}
             className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
           >
-            <Edit3 className="w-4 h-4 text-emerald-400" />
-            AI Prompt Correction
+            <Award className="w-4 h-4 text-amber-400" />
+            PMA Agreement
           </button>
         </div>
+
+        <button
+          onClick={() => setIsAdjustOpen(true)}
+          disabled={isLoading}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-medium text-xs border border-slate-750 transition"
+        >
+          <Edit3 className="w-4 h-4 text-emerald-400" />
+          AI Prompt Extraction Correction
+        </button>
       </div>
+
+      {/* Site Photos & Visual AI Annotation Modal */}
+      <SitePhotoAnnotationModal
+        isOpen={isPhotosOpen}
+        onClose={() => setIsPhotosOpen(false)}
+        customerName={extractedData.customerInfo?.name || 'Customer'}
+        jobSummary={extractedData.executiveSummary}
+      />
 
       {/* Preventative Maintenance Agreement (PMA) Modal */}
       <MaintenanceAgreementModal

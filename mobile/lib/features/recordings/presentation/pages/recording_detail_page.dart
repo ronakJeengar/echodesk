@@ -16,6 +16,7 @@ import '../widgets/speech_analytics_sheet.dart';
 import '../../../calculators/presentation/widgets/margin_estimator_sheet.dart';
 import '../../../localization/presentation/widgets/language_translation_sheet.dart';
 import '../../../customers/presentation/widgets/maintenance_agreement_sheet.dart';
+import '../widgets/site_photos_sheet.dart';
 
 final recordingDetailFutureProvider =
     FutureProvider.autoDispose.family<RecordingModel?, String>((ref, recordingId) async {
@@ -705,6 +706,31 @@ class _RecordingDetailPageState extends ConsumerState<RecordingDetailPage> {
                     label: Text(
                       '5-Star Review Request & QR',
                       style: AppTypography.button.copyWith(color: Colors.amber),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // Job Site Photos & Visual Tags Button
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      SitePhotosSheet.show(
+                        context,
+                        customerName: data.customerInfo?['name'] as String? ?? 'Valued Customer',
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.primaryLight, width: 1.2),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    icon: const Icon(Icons.camera_alt_outlined, size: 18, color: AppColors.primaryLight),
+                    label: Text(
+                      'Job Site Photos & Visual AI Tags',
+                      style: AppTypography.button.copyWith(color: AppColors.primaryLight),
                     ),
                   ),
                 ),
