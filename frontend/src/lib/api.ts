@@ -285,3 +285,35 @@ export const fetchTechnicians = async (): Promise<Technician[]> => {
   const res = await api.get('/workspaces/technicians');
   return res.data.data;
 };
+
+export interface UserProfileData {
+  id: string;
+  email: string;
+  fullName: string;
+  phone?: string;
+  avatar?: string;
+  role: string;
+  memberships: Array<{
+    workspaceId: string;
+    workspaceName: string;
+    workspaceSlug: string;
+    industry: string;
+    role: string;
+  }>;
+}
+
+export const fetchUserProfile = async (): Promise<UserProfileData> => {
+  const res = await api.get('/auth/me');
+  return res.data.data;
+};
+
+export const updateUserProfile = async (data: {
+  fullName?: string;
+  phone?: string;
+  workspaceName?: string;
+  industry?: string;
+}): Promise<UserProfileData> => {
+  const res = await api.patch('/auth/profile', data);
+  return res.data.data;
+};
+

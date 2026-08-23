@@ -18,6 +18,14 @@ export interface LoginDto {
   password: string;
 }
 
+export interface UpdateProfileDto {
+  fullName?: string;
+  phone?: string;
+  avatar?: string;
+  workspaceName?: string;
+  industry?: string;
+}
+
 function slugify(text: string): string {
   return text
     .toLowerCase()
@@ -200,5 +208,39 @@ export class AuthService {
         role: m.role,
       })),
     };
+  }
+
+  static async updateProfile(userId: string, dto: UpdateProfileDto) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { memberships: { include: { workspace: true } } },
+    });
+
+    if (!user) {
+      throw new AppError('User not found.', 404);
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(dto.fullName ? { fullName: dto.fullName } : {}),
+        ...(dto.phone !== undefined ? { phone: dto.phone } : {}),
+        ...(dto.avatar !== undefined ? { avatar: dto.avatar } : {}),
+      },
+    });
+
+    // Update primary workspace name / industry if provided
+    const primaryMembership = user.memberships[0];
+    if (primaryMembership && (dto.workspaceName || dto.industry)) {
+      await prisma.workspace.update({
+        where: { id: primaryMembership.workspaceId },
+        data: {
+          ...(dto.workspaceName ? { name: dto.workspaceName } : {}),
+          ...(dto.industry ? { industry: dto.industry } : {}),
+        },
+      });
+    }
+
+    return this.getMe(userId);
   }
 }

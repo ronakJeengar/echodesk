@@ -16,12 +16,12 @@ interface CustomerPortalPreviewModalProps {
 export const CustomerPortalPreviewModal: React.FC<CustomerPortalPreviewModalProps> = ({
   isOpen,
   onClose,
-  customerName = 'Sarah Jenkins',
-  customerPhone = '(555) 234-5678',
-  customerAddress = '742 Evergreen Terrace, Springfield',
-  jobSummary = 'Dual-run capacitor replacement & refrigerant level adjustment.',
-  quotedAmount = 385.0,
-  recordingId = 'rec-101',
+  customerName = 'Valued Client',
+  customerPhone = '',
+  customerAddress = 'On-Site Location',
+  jobSummary = 'Completed Field Service Visit',
+  quotedAmount = 0.0,
+  recordingId = 'rec-service',
 }) => {
   const [jobStatus, setJobStatus] = useState<'EN_ROUTE' | 'ON_SITE' | 'COMPLETED'>('COMPLETED');
   const [copied, setCopied] = useState(false);

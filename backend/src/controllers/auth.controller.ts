@@ -20,12 +20,19 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
+export const updateProfileSchema = z.object({
+  fullName: z.string().min(2).optional(),
+  phone: z.string().optional(),
+  avatar: z.string().optional(),
+  workspaceName: z.string().min(2).optional(),
+  industry: z.string().optional(),
+});
+
 export class AuthController {
   static async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const result = await AuthService.register(req.body);
 
-      // Set HttpOnly refresh cookie
       res.cookie('refreshToken', result.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -111,6 +118,23 @@ export class AuthController {
       res.status(200).json({
         success: true,
         data: me,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async updateProfile(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        throw new AppError('Authentication required', 401);
+      }
+
+      const updated = await AuthService.updateProfile(req.user.id, req.body);
+      res.status(200).json({
+        success: true,
+        message: 'Profile updated successfully',
+        data: updated,
       });
     } catch (error) {
       next(error);

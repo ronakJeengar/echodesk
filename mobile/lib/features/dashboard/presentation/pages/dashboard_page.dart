@@ -10,6 +10,7 @@ import '../../../notifications/presentation/widgets/notifications_sheet.dart';
 import '../../../technicians/presentation/widgets/technicians_roster_sheet.dart';
 import '../../../calculators/presentation/widgets/trade_calculators_sheet.dart';
 import '../../../equipment/presentation/widgets/equipment_decoder_sheet.dart';
+import '../../../auth/presentation/widgets/profile_sheet.dart';
 import '../../../../core/widgets/echo_logo.dart';
 import '../../../../core/widgets/metric_tile.dart';
 import '../../../../core/widgets/glass_card.dart';
@@ -54,14 +55,15 @@ class DashboardPage extends ConsumerWidget {
           ),
           IconButton(
             icon: const Icon(Icons.account_circle_outlined, color: AppColors.primary),
-            tooltip: 'Account & Switch User',
-            onPressed: () => context.push('/login'),
+            tooltip: 'Contractor Profile',
+            onPressed: () => ProfileSheet.show(context),
           ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert_rounded, color: AppColors.textSecondary),
             color: AppColors.surfaceElevated,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             onSelected: (value) {
+              if (value == 'profile') ProfileSheet.show(context);
               if (value == 'decoder') EquipmentDecoderSheet.show(context);
               if (value == 'calc') TradeCalculatorsSheet.show(context);
               if (value == 'roster') TechniciansRosterSheet.show(context);
@@ -72,6 +74,16 @@ class DashboardPage extends ConsumerWidget {
               }
             },
             itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'profile',
+                child: Row(
+                  children: [
+                    const Icon(Icons.person_outline_rounded, color: AppColors.primary, size: 18),
+                    const SizedBox(width: 10),
+                    Text('Contractor Profile', style: AppTypography.caption),
+                  ],
+                ),
+              ),
               PopupMenuItem(
                 value: 'decoder',
                 child: Row(
