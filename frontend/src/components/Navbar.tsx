@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { fetchNotifications, AppNotification } from '../lib/api';
 import { TradeCalculatorsModal } from './TradeCalculatorsModal';
 import { TechniciansRosterModal } from './TechniciansRosterModal';
-import { Mic, Bell, User, CheckCircle2, FileText, PenTool, Sparkles, X, Clock, Calculator, Users } from 'lucide-react';
+import { EquipmentWarrantyScannerModal } from './EquipmentWarrantyScannerModal';
+import { Mic, Bell, User, CheckCircle2, FileText, PenTool, Sparkles, X, Clock, Calculator, Users, ScanBarcode } from 'lucide-react';
 
 interface NavbarProps {
   onOpenUploader: () => void;
@@ -14,6 +15,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenUploader }) => {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isCalcOpen, setIsCalcOpen] = useState(false);
   const [isRosterOpen, setIsRosterOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const navigate = useNavigate();
 
   const { data } = useQuery({
@@ -97,6 +99,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenUploader }) => {
           title="Fleet Technicians Roster"
         >
           <Users className="w-4 h-4" />
+        </button>
+
+        {/* Equipment Serial & Warranty Scanner CTA */}
+        <button
+          onClick={() => setIsScannerOpen(true)}
+          className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition"
+          title="Equipment Serial & Warranty Decoder"
+        >
+          <ScanBarcode className="w-4 h-4" />
         </button>
 
         {/* Notification Bell with Dropdown */}
@@ -189,6 +200,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenUploader }) => {
       <TechniciansRosterModal
         isOpen={isRosterOpen}
         onClose={() => setIsRosterOpen(false)}
+      />
+
+      <EquipmentWarrantyScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
       />
     </header>
   );

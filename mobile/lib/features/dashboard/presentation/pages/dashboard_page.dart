@@ -9,6 +9,7 @@ import '../../../notifications/data/notifications_repository.dart';
 import '../../../notifications/presentation/widgets/notifications_sheet.dart';
 import '../../../technicians/presentation/widgets/technicians_roster_sheet.dart';
 import '../../../calculators/presentation/widgets/trade_calculators_sheet.dart';
+import '../../../equipment/presentation/widgets/equipment_decoder_sheet.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -41,6 +42,11 @@ class DashboardPage extends ConsumerWidget {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code_scanner_rounded, color: AppColors.textSecondary),
+            tooltip: 'Equipment Tag Decoder',
+            onPressed: () => EquipmentDecoderSheet.show(context),
+          ),
           IconButton(
             icon: const Icon(Icons.calculate_outlined, color: AppColors.textSecondary),
             tooltip: 'Trade Diagnostic Calculators',
