@@ -1,0 +1,106 @@
+import axios from 'axios';
+import { DashboardStats, Recording, Customer, Job, Task } from '../types';
+
+export const api = axios.create({
+  baseURL: '/api/v1',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Auto-inject stored JWT token and workspace ID
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('echodesk_token');
+  const workspaceId = localStorage.getItem('echodesk_workspace_id');
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  if (workspaceId) {
+    config.headers['x-workspace-id'] = workspaceId;
+  }
+  return config;
+});
+
+// Default seed login helper if no token exists
+export async function ensureAuthenticated() {
+  const existingToken = localStorage.getItem('echodesk_token');
+  if (existingToken) return existingToken;
+
+  try {
+    const res = await axios.post('/api/v1/auth/login', {
+      email: 'dave@prohvac.com',
+      password: 'SecurePassword123!',
+    });
+
+    if (res.data?.data?.accessToken) {
+      const { accessToken, workspace } = res.data.data;
+      localStorage.setItem('echodesk_token', accessToken);
+      if (workspace?.id) {
+        localStorage.setItem('echodesk_workspace_id', workspace.id);
+      }
+      return accessToken;
+    }
+  } catch (err) {
+    console.warn('Auto-login error:', err);
+  }
+  return null;
+}
+
+export const fetchStats = async (): Promise<DashboardStats> => {
+  const res = await api.get('/stats');
+  return res.data.data;
+};
+
+export const fetchRecordings = async (): Promise<Recording[]> => {
+  const res = await api.get('/recordings');
+  return res.data.data.recordings;
+};
+
+export const fetchRecordingById = async (id: string): Promise<Recording> => {
+  const res = await api.get(`/recordings/${id}`);
+  return res.data.data;
+};
+
+export const fetchCustomers = async (search?: string): Promise<Customer[]> => {
+  const res = await api.get('/customers', { params: { search } });
+  return res.data.data.customers;
+};
+
+export const fetchJobs = async (): Promise<Job[]> => {
+  const res = await api.get('/jobs');
+  return res.data.data.jobs;
+};
+
+export const fetchTasks = async (): Promise<Task[]> => {
+  const res = await api.get('/tasks');
+  return res.data.data;
+};
+
+export const toggleTask = async (taskId: string): Promise<Task> => {
+  const res = await api.patch(`/tasks/${taskId}/toggle`);
+  return res.data.data;
+};
+
+export const reExtractRecording = async (id: string, promptAdjustment: string): Promise<Recording> => {
+  const res = await api.post(`/recordings/${id}/re-extract`, { promptAdjustment });
+  return res.data.data;
+};
+
+export const requestPresignedUrl = async (params: {
+  durationSec: number;
+  fileSizeBytes: number;
+  audioFormat: string;
+}) => {
+  const workspaceId = localStorage.getItem('echodesk_workspace_id');
+  const res = await api.post('/recordings/presigned-url', {
+    ...params,
+    workspaceId,
+  });
+  return res.data.data;
+};
+
+export const processRecording = async (recordingId: string, params?: { jobCategory?: string; customerId?: string }) => {
+  const res = await api.post(`/recordings/${recordingId}/process`, params || {});
+  return res.data.data;
+};
