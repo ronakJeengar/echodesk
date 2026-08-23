@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ExtractedData, Recording } from '../types';
 import { printWorkOrderPdf } from '../lib/pdf';
 import { SendInvoiceModal } from './SendInvoiceModal';
+import { SignatureCaptureModal } from './SignatureCaptureModal';
 import {
   User,
   Wrench,
@@ -12,7 +13,9 @@ import {
   Edit3,
   Printer,
   FileText,
-  Send
+  Send,
+  PenTool,
+  CheckCircle2
 } from 'lucide-react';
 
 interface EntityInspectorProps {
@@ -32,6 +35,8 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
 }) => {
   const [isAdjustOpen, setIsAdjustOpen] = useState(false);
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
+  const [isSignatureOpen, setIsSignatureOpen] = useState(false);
+  const [signedBy, setSignedBy] = useState<string | null>(null);
   const [promptText, setPromptText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -235,7 +240,7 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
         </div>
       )}
 
-      {/* Actions: Send to Customer, PDF Export & AI Correction */}
+      {/* Actions: Send to Customer, Digital Signature, PDF Export & AI Correction */}
       <div className="space-y-2.5 pt-2">
         <button
           onClick={() => setIsSendModalOpen(true)}
@@ -245,10 +250,27 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
           Send Invoice to Customer (Email / SMS)
         </button>
 
+        <button
+          onClick={() => setIsSignatureOpen(true)}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 font-semibold text-xs border border-cyan-500/30 transition"
+        >
+          {signedBy ? (
+            <>
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <span>Signed & Approved by {signedBy}</span>
+            </>
+          ) : (
+            <>
+              <PenTool className="w-4 h-4" />
+              <span>Sign & Authorize Work Order (Draw On-Screen)</span>
+            </>
+          )}
+        </button>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <button
             onClick={handlePrintPdf}
-            className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-semibold text-xs border border-emerald-500/30 transition"
+            className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
           >
             <Printer className="w-4 h-4" />
             Print Work Order PDF
@@ -264,6 +286,16 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Digital Signature Capture Modal */}
+      <SignatureCaptureModal
+        isOpen={isSignatureOpen}
+        onClose={() => setIsSignatureOpen(false)}
+        initialSignerName={extractedData.customerInfo?.name}
+        onSigned={(_dataUrl, name, role) => {
+          setSignedBy(`${name} (${role})`);
+        }}
+      />
 
       {/* Send Invoice Modal */}
       <SendInvoiceModal

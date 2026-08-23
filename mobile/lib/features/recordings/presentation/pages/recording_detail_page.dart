@@ -8,6 +8,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../domain/models/recording_model.dart';
 import '../providers/recording_provider.dart';
 import '../widgets/send_invoice_modal.dart';
+import '../widgets/signature_modal.dart';
 
 final recordingDetailFutureProvider =
     FutureProvider.autoDispose.family<RecordingModel?, String>((ref, recordingId) async {
@@ -506,6 +507,39 @@ class _RecordingDetailPageState extends ConsumerState<RecordingDetailPage> {
                     label: Text(
                       'Send Invoice to Customer (Email/SMS)',
                       style: AppTypography.button.copyWith(color: Colors.black),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // Sign & Authorize Work Order Button
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      SignatureModal.show(
+                        context,
+                        initialSignerName: data.customerInfo?['name'] as String?,
+                        onSigned: (signerName, signerRole) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: AppColors.success,
+                              content: Text('✓ Digital signature captured for $signerName ($signerRole)!'),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.primaryLight, width: 1.2),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    icon: const Icon(Icons.draw_rounded, size: 18, color: AppColors.primaryLight),
+                    label: Text(
+                      'Sign & Approve Work Order',
+                      style: AppTypography.button.copyWith(color: AppColors.primaryLight),
                     ),
                   ),
                 ),

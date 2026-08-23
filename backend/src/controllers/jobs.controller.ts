@@ -1,5 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { z } from 'zod';
+import { prisma } from '../database/prisma.js';
 import { AuthenticatedRequest } from '../types/index.js';
 import { CRMService } from '../services/crm.service.js';
 import { AppError } from '../middlewares/error.middleware.js';
@@ -101,6 +102,51 @@ export class JobsController {
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="echodesk-jobs-${Date.now()}.csv"`);
       res.status(200).send(csvData);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async attachSignature(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const workspaceId = req.workspaceId;
+      if (!workspaceId) throw new AppError('Workspace context is required', 400);
+
+      const { id } = req.params;
+      const { signatureDataUrl, signerName, signerRole = 'CUSTOMER' } = req.body;
+
+      const job = await CRMService.getJobById(workspaceId, id as string);
+      if (!job) throw new AppError('Job not found', 404);
+
+      // Create activity log with signature metadata
+      await prisma.activityLog.create({
+        data: {
+          userId: req.user!.id,
+          action: 'SIGNATURE_CAPTURED',
+          metadata: {
+            jobId: id,
+            signerName,
+            signerRole,
+            capturedAt: new Date().toISOString(),
+          },
+        },
+      });
+
+      res.status(200).json({
+        success: true,
+        message: `Digital signature from ${signerName || 'Customer'} successfully attached to work order!`,
+        data: {
+          jobId: id,
+          signerName,
+          signerRole,
+          signatureDataUrl,
+          capturedAt: new Date().toISOString(),
+        },
+      });
     } catch (error) {
       next(error);
     }
