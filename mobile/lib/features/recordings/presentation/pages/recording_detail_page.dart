@@ -15,6 +15,7 @@ import '../../../safety/presentation/widgets/safety_audit_sheet.dart';
 import '../widgets/speech_analytics_sheet.dart';
 import '../../../calculators/presentation/widgets/margin_estimator_sheet.dart';
 import '../../../localization/presentation/widgets/language_translation_sheet.dart';
+import '../../../customers/presentation/widgets/maintenance_agreement_sheet.dart';
 
 final recordingDetailFutureProvider =
     FutureProvider.autoDispose.family<RecordingModel?, String>((ref, recordingId) async {
@@ -789,6 +790,32 @@ class _RecordingDetailPageState extends ConsumerState<RecordingDetailPage> {
                     label: Text(
                       'AI Multi-Language Translator (ES / FR / PT)',
                       style: AppTypography.button.copyWith(color: AppColors.primary),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // PMA Maintenance Agreement Button
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      MaintenanceAgreementSheet.show(
+                        context,
+                        customerName: data.customerInfo?['name'] as String? ?? 'Valued Customer',
+                        equipmentSummary: data.executiveSummary,
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.amber, width: 1.2),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    icon: const Icon(Icons.card_membership_rounded, size: 18, color: Colors.amber),
+                    label: Text(
+                      'PMA Maintenance Agreement Proposal',
+                      style: AppTypography.button.copyWith(color: Colors.amber),
                     ),
                   ),
                 ),
