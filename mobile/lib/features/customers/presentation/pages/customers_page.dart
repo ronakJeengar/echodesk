@@ -33,38 +33,19 @@ class CustomersPage extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          // Search & Action Header
+          // Clean Full-Width Search Input
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    onChanged: (val) {
-                      ref.read(customersSearchQueryProvider.notifier).state = val;
-                    },
-                    decoration: const InputDecoration(
-                      hintText: 'Search customers by name, phone, or tag...',
-                      prefixIcon: Icon(Icons.search_rounded, color: AppColors.textMuted, size: 20),
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton.icon(
-                  onPressed: () => AddCustomerSheet.show(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 0,
-                  ),
-                  icon: const Icon(Icons.add_rounded, size: 18),
-                  label: Text('Add', style: AppTypography.button.copyWith(color: Colors.black, fontSize: 13)),
-                ),
-              ],
+            child: TextField(
+              onChanged: (val) {
+                ref.read(customersSearchQueryProvider.notifier).state = val;
+              },
+              decoration: const InputDecoration(
+                hintText: 'Search customers by name, phone, or tag...',
+                prefixIcon: Icon(Icons.search_rounded, color: AppColors.textMuted, size: 20),
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              ),
             ),
           ),
 
@@ -81,7 +62,7 @@ class CustomersPage extends ConsumerWidget {
                         Text('No customers found', style: AppTypography.h3),
                         const SizedBox(height: 4),
                         Text(
-                          'Tap "+ Add" above to register your first client.',
+                          'Tap the + button in the top right to add a customer.',
                           style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
                         ),
                       ],
