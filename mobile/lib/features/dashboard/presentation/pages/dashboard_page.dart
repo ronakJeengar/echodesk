@@ -11,6 +11,8 @@ import '../../../technicians/presentation/widgets/technicians_roster_sheet.dart'
 import '../../../calculators/presentation/widgets/trade_calculators_sheet.dart';
 import '../../../equipment/presentation/widgets/equipment_decoder_sheet.dart';
 import '../../../../core/widgets/echo_logo.dart';
+import '../../../../core/widgets/metric_tile.dart';
+import '../../../../core/widgets/glass_card.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -287,29 +289,29 @@ class DashboardPage extends ConsumerWidget {
             statsAsync.when(
               data: (stats) => Row(
                 children: [
-                  _buildStatCard('Voice Hours', '${stats.totalVoiceHours}h', Icons.mic_none_rounded, AppColors.primary),
+                  MetricTile(label: 'Voice Hours', value: '${stats.totalVoiceHours}h', icon: Icons.mic_none_rounded, color: AppColors.primary),
                   const SizedBox(width: 12),
-                  _buildStatCard('Active Jobs', '${stats.totalJobs}', Icons.build_outlined, AppColors.secondary),
+                  MetricTile(label: 'Active Jobs', value: '${stats.totalJobs}', icon: Icons.build_outlined, color: AppColors.secondary),
                   const SizedBox(width: 12),
-                  _buildStatCard('Tasks To-Do', '${stats.pendingTasks}', Icons.check_circle_outline_rounded, AppColors.success),
+                  MetricTile(label: 'Tasks To-Do', value: '${stats.pendingTasks}', icon: Icons.check_circle_outline_rounded, color: AppColors.success),
                 ],
               ),
-              loading: () => Row(
+              loading: () => const Row(
                 children: [
-                  _buildStatCard('Voice Hours', '...', Icons.mic_none_rounded, AppColors.primary),
-                  const SizedBox(width: 12),
-                  _buildStatCard('Active Jobs', '...', Icons.build_outlined, AppColors.secondary),
-                  const SizedBox(width: 12),
-                  _buildStatCard('Tasks To-Do', '...', Icons.check_circle_outline_rounded, AppColors.success),
+                  MetricTile(label: 'Voice Hours', value: '...', icon: Icons.mic_none_rounded, color: AppColors.primary),
+                  SizedBox(width: 12),
+                  MetricTile(label: 'Active Jobs', value: '...', icon: Icons.build_outlined, color: AppColors.secondary),
+                  SizedBox(width: 12),
+                  MetricTile(label: 'Tasks To-Do', value: '...', icon: Icons.check_circle_outline_rounded, color: AppColors.success),
                 ],
               ),
-              error: (_, __) => Row(
+              error: (_, __) => const Row(
                 children: [
-                  _buildStatCard('Voice Hours', '0.0h', Icons.mic_none_rounded, AppColors.primary),
-                  const SizedBox(width: 12),
-                  _buildStatCard('Active Jobs', '0', Icons.build_outlined, AppColors.secondary),
-                  const SizedBox(width: 12),
-                  _buildStatCard('Tasks To-Do', '0', Icons.check_circle_outline_rounded, AppColors.success),
+                  MetricTile(label: 'Voice Hours', value: '0.0h', icon: Icons.mic_none_rounded, color: AppColors.primary),
+                  SizedBox(width: 12),
+                  MetricTile(label: 'Active Jobs', value: '0', icon: Icons.build_outlined, color: AppColors.secondary),
+                  SizedBox(width: 12),
+                  MetricTile(label: 'Tasks To-Do', value: '0', icon: Icons.check_circle_outline_rounded, color: AppColors.success),
                 ],
               ),
             ),
@@ -460,29 +462,6 @@ class DashboardPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, size: 20, color: color),
-            const SizedBox(height: 10),
-            Text(value, style: AppTypography.h3.copyWith(fontSize: 18)),
-            const SizedBox(height: 2),
-            Text(title, style: AppTypography.caption),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildRecentNoteTile({
     required String customerName,
     required String summary,
@@ -490,13 +469,9 @@ class DashboardPage extends ConsumerWidget {
     required String status,
     required String cost,
   }) {
-    return Container(
+    return GlassCard(
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -511,20 +486,7 @@ class DashboardPage extends ConsumerWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  cost,
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.success,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
+              StatusPill(label: cost, color: AppColors.success),
             ],
           ),
           const SizedBox(height: 6),
