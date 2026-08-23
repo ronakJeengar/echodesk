@@ -53,6 +53,7 @@ class AppShell extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'app_shell_record_fab',
         onPressed: () => context.push('/record'),
         backgroundColor: AppColors.primary,
         elevation: 4,

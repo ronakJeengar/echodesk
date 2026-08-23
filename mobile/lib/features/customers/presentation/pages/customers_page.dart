@@ -19,12 +19,18 @@ class CustomersPage extends ConsumerWidget {
         title: Text('Customers', style: AppTypography.h3),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AppColors.primary),
+            icon: const Icon(Icons.person_add_rounded, color: AppColors.primary),
+            tooltip: 'Add Client',
+            onPressed: () => AddCustomerSheet.show(context),
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, color: AppColors.textSecondary),
             onPressed: () => ref.invalidate(customersListProvider),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'customers_page_add_client_fab',
         onPressed: () => AddCustomerSheet.show(context),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.black,
