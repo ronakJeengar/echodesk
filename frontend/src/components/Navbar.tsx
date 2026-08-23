@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { fetchNotifications, AppNotification } from '../lib/api';
 import { TradeCalculatorsModal } from './TradeCalculatorsModal';
-import { Mic, Bell, User, CheckCircle2, FileText, PenTool, Sparkles, X, Clock, Calculator } from 'lucide-react';
+import { TechniciansRosterModal } from './TechniciansRosterModal';
+import { Mic, Bell, User, CheckCircle2, FileText, PenTool, Sparkles, X, Clock, Calculator, Users } from 'lucide-react';
 
 interface NavbarProps {
   onOpenUploader: () => void;
@@ -12,6 +13,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ onOpenUploader }) => {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isCalcOpen, setIsCalcOpen] = useState(false);
+  const [isRosterOpen, setIsRosterOpen] = useState(false);
   const navigate = useNavigate();
 
   const { data } = useQuery({
@@ -86,6 +88,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenUploader }) => {
           title="Field Diagnostic Calculators"
         >
           <Calculator className="w-4 h-4" />
+        </button>
+
+        {/* Fleet & Technicians Roster CTA */}
+        <button
+          onClick={() => setIsRosterOpen(true)}
+          className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition"
+          title="Fleet Technicians Roster"
+        >
+          <Users className="w-4 h-4" />
         </button>
 
         {/* Notification Bell with Dropdown */}
@@ -173,6 +184,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenUploader }) => {
       <TradeCalculatorsModal
         isOpen={isCalcOpen}
         onClose={() => setIsCalcOpen(false)}
+      />
+
+      <TechniciansRosterModal
+        isOpen={isRosterOpen}
+        onClose={() => setIsRosterOpen(false)}
       />
     </header>
   );

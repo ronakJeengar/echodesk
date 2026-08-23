@@ -226,3 +226,19 @@ export const fetchNotifications = async (): Promise<{
   const res = await api.get('/stats/notifications');
   return res.data.data;
 };
+
+export interface Technician {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  specialty: string;
+  status: 'AVAILABLE' | 'ON_SITE' | 'DISPATCHED' | 'OFF_DUTY';
+  currentJob: string;
+  activeJobs: number;
+}
+
+export const fetchTechnicians = async (): Promise<Technician[]> => {
+  const res = await api.get('/workspaces/technicians');
+  return res.data.data;
+};
