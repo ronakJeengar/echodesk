@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../domain/models/recording_model.dart';
 import '../../../../core/pdf/work_order_pdf_service.dart';
+import '../../../calculators/presentation/widgets/trade_calculators_sheet.dart';
 import '../providers/recording_provider.dart';
 
 class RecordVoicePage extends ConsumerStatefulWidget {
@@ -416,6 +417,14 @@ class _RecordVoicePageState extends ConsumerState<RecordVoicePage>
           icon: const Icon(Icons.close_rounded),
           onPressed: () => context.pop(),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.calculate_outlined, color: AppColors.primary),
+            tooltip: 'Trade Diagnostic Calculators',
+            onPressed: () => TradeCalculatorsSheet.show(context),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: Column(
