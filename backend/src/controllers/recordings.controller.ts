@@ -193,9 +193,29 @@ export class RecordingsController {
       const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string, 10) || 20));
       const skip = (page - 1) * limit;
       const status = req.query.status as ProcessingStatus | undefined;
+      const search = req.query.search as string | undefined;
+      const sentiment = req.query.sentiment as any;
+      const customerId = req.query.customerId as string | undefined;
 
       const where: any = { workspaceId };
       if (status) where.status = status;
+      if (customerId) where.customerId = customerId;
+
+      if (search) {
+        where.OR = [
+          { rawTranscript: { contains: search, mode: 'insensitive' } },
+          { customer: { name: { contains: search, mode: 'insensitive' } } },
+          { customer: { companyName: { contains: search, mode: 'insensitive' } } },
+          { extractedData: { executiveSummary: { contains: search, mode: 'insensitive' } } },
+        ];
+      }
+
+      if (sentiment) {
+        where.extractedData = {
+          ...where.extractedData,
+          sentiment,
+        };
+      }
 
       const [total, recordings] = await Promise.all([
         prisma.recording.count({ where }),
