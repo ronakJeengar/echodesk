@@ -40,6 +40,12 @@ class _RecordingDetailPageState extends ConsumerState<RecordingDetailPage> {
 
   final List<double> _availableRates = const [0.75, 1.0, 1.25, 1.5, 2.0];
 
+  final List<Map<String, dynamic>> _bookmarks = [
+    {'timeSec': 4.0, 'label': 'Site Intro'},
+    {'timeSec': 16.0, 'label': 'Diagnostic Check'},
+    {'timeSec': 28.0, 'label': 'Quoted Approval'},
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -80,6 +86,61 @@ class _RecordingDetailPageState extends ConsumerState<RecordingDetailPage> {
         );
       }
     }
+  }
+
+  void _seekToBookmark(double timeSec) {
+    _audioPlayer.seek(Duration(seconds: timeSec.toInt()));
+    if (_playerState != PlayerState.playing) {
+      _togglePlayPause('');
+    }
+  }
+
+  void _showAddBookmarkDialog() {
+    final controller = TextEditingController();
+    final currentTimeSec = _position.inSeconds.toDouble();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.bookmark_add_rounded, color: AppColors.primary, size: 20),
+            const SizedBox(width: 8),
+            Text('Pin Moment (${_formatDuration(_position)})', style: AppTypography.h3),
+          ],
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'e.g. Capacitor Serial / Voltage',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel', style: AppTypography.button.copyWith(color: AppColors.textMuted)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            onPressed: () {
+              if (controller.text.trim().isNotEmpty) {
+                setState(() {
+                  _bookmarks.add({
+                    'timeSec': currentTimeSec,
+                    'label': controller.text.trim(),
+                  });
+                  _bookmarks.sort((a, b) => (a['timeSec'] as double).compareTo(b['timeSec'] as double));
+                });
+              }
+              Navigator.pop(ctx);
+            },
+            child: Text('Pin', style: AppTypography.button.copyWith(color: Colors.black)),
+          ),
+        ],
+      ),
+    );
   }
 
   String _formatDuration(Duration d) {
@@ -318,6 +379,82 @@ class _RecordingDetailPageState extends ConsumerState<RecordingDetailPage> {
                                   fontSize: 11,
                                 ),
                               ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // Key Audio Moments & Bookmark Pins
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.bookmark_outline_rounded, size: 14, color: AppColors.primary),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Key Audio Moments',
+                              style: AppTypography.caption.copyWith(
+                                color: AppColors.textSecondary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        InkWell(
+                          onTap: _showAddBookmarkDialog,
+                          child: Row(
+                            children: [
+                              const Icon(Icons.add_rounded, size: 14, color: AppColors.primary),
+                              Text(
+                                'Pin Moment',
+                                style: AppTypography.caption.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: _bookmarks.map((bm) {
+                        final time = bm['timeSec'] as double;
+                        final label = bm['label'] as String;
+                        final mins = (time ~/ 60).toString().padLeft(2, '0');
+                        final secs = (time.toInt() % 60).toString().padLeft(2, '0');
+
+                        return InkWell(
+                          onTap: () => _seekToBookmark(time),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceElevated,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '$mins:$secs',
+                                  style: AppTypography.caption.copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(label, style: AppTypography.caption),
+                              ],
                             ),
                           ),
                         );
