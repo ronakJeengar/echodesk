@@ -10,6 +10,7 @@ import '../providers/recording_provider.dart';
 import '../widgets/send_invoice_modal.dart';
 import '../widgets/signature_modal.dart';
 import '../../../customers/presentation/widgets/follow_up_composer_sheet.dart';
+import '../../../customers/presentation/widgets/review_request_sheet.dart';
 import '../../../safety/presentation/widgets/safety_audit_sheet.dart';
 import '../widgets/speech_analytics_sheet.dart';
 import '../../../calculators/presentation/widgets/margin_estimator_sheet.dart';
@@ -675,6 +676,33 @@ class _RecordingDetailPageState extends ConsumerState<RecordingDetailPage> {
                     label: Text(
                       'AI Follow-Up Message (SMS / Email)',
                       style: AppTypography.button.copyWith(color: AppColors.primary),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // 5-Star Review Request & QR Button
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      ReviewRequestSheet.show(
+                        context,
+                        customerName: data.customerInfo?['name'] as String? ?? 'Valued Customer',
+                        customerPhone: data.customerInfo?['phone'] as String?,
+                        serviceDescription: data.executiveSummary,
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.amber, width: 1.2),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    icon: const Icon(Icons.star_rounded, size: 18, color: Colors.amber),
+                    label: Text(
+                      '5-Star Review Request & QR',
+                      style: AppTypography.button.copyWith(color: Colors.amber),
                     ),
                   ),
                 ),

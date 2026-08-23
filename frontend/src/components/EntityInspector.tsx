@@ -6,6 +6,7 @@ import { SignatureCaptureModal } from './SignatureCaptureModal';
 import { CustomerFollowUpComposerModal } from './CustomerFollowUpComposerModal';
 import { SafetyAuditModal } from './SafetyAuditModal';
 import { MaterialMarginEstimatorModal } from './MaterialMarginEstimatorModal';
+import { CustomerReviewRequestModal } from './CustomerReviewRequestModal';
 import {
   User,
   Wrench,
@@ -22,7 +23,8 @@ import {
   MessageSquare,
   ShieldCheck,
   HardHat,
-  TrendingUp
+  TrendingUp,
+  Star
 } from 'lucide-react';
 
 interface EntityInspectorProps {
@@ -46,6 +48,7 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
   const [isFollowUpOpen, setIsFollowUpOpen] = useState(false);
   const [isSafetyAuditOpen, setIsSafetyAuditOpen] = useState(false);
   const [isMarginEstimatorOpen, setIsMarginEstimatorOpen] = useState(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [signedBy, setSignedBy] = useState<string | null>(null);
   const [promptText, setPromptText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -305,23 +308,42 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
           </button>
 
           <button
+            onClick={() => setIsReviewModalOpen(true)}
+            className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
+          >
+            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+            5-Star Review Request
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <button
             onClick={handlePrintPdf}
             className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
           >
             <Printer className="w-4 h-4" />
             Print Work Order PDF
           </button>
-        </div>
 
-        <button
-          onClick={() => setIsAdjustOpen(true)}
-          disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-medium text-xs border border-slate-750 transition"
-        >
-          <Edit3 className="w-4 h-4 text-emerald-400" />
-          AI Prompt Extraction Correction
-        </button>
+          <button
+            onClick={() => setIsAdjustOpen(true)}
+            disabled={isLoading}
+            className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
+          >
+            <Edit3 className="w-4 h-4 text-emerald-400" />
+            AI Prompt Correction
+          </button>
+        </div>
       </div>
+
+      {/* Customer 5-Star Review Request & QR Modal */}
+      <CustomerReviewRequestModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        customerName={extractedData.customerInfo?.name || 'Customer'}
+        customerPhone={extractedData.customerInfo?.phone || '(555) 234-5678'}
+        serviceCompleted={extractedData.executiveSummary || 'Field Service Visit'}
+      />
 
       {/* Job Scope & Material Margin Estimator Modal */}
       <MaterialMarginEstimatorModal
