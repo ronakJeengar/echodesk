@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchWebhooks, createWebhook, deleteWebhook, testPingWebhook, WebhookSubscription } from '../lib/api';
+import { fetchWebhooks, createWebhook, deleteWebhook, testPingWebhook, seedDemoData, WebhookSubscription } from '../lib/api';
 import {
   Webhook,
   Plus,
@@ -13,12 +13,15 @@ import {
   Settings,
   Building,
   ShieldCheck,
-  ExternalLink
+  ExternalLink,
+  Sparkles,
+  Database
 } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
   const queryClient = useQueryClient();
   const [newUrl, setNewUrl] = useState('');
+  const [seedSuccessMsg, setSeedSuccessMsg] = useState<string | null>(null);
   const [selectedEvents, setSelectedEvents] = useState<string[]>([
     'recording.completed',
     'job.created',
@@ -30,6 +33,19 @@ export const SettingsPage: React.FC = () => {
   const { data: webhooks = [], isLoading } = useQuery({
     queryKey: ['webhooks'],
     queryFn: fetchWebhooks,
+  });
+
+  const seedMutation = useMutation({
+    mutationFn: seedDemoData,
+    onSuccess: (data) => {
+      setSeedSuccessMsg(data.message || 'Demo records seeded successfully!');
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['recordings'] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['workspace-analytics'] });
+      setTimeout(() => setSeedSuccessMsg(null), 5000);
+    },
   });
 
   const createMutation = useMutation({
@@ -92,12 +108,30 @@ export const SettingsPage: React.FC = () => {
   return (
     <div className="p-8 space-y-8 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="pb-4 border-b border-slate-800">
-        <h1 className="text-2xl font-black text-white tracking-tight">Workspace & Integration Settings</h1>
-        <p className="text-xs text-slate-400">
-          Configure real-time webhooks for Zapier, QuickBooks, ServiceTitan, and external CRMs
-        </p>
+      <div className="pb-4 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-white tracking-tight">Workspace & Integration Settings</h1>
+          <p className="text-xs text-slate-400">
+            Configure real-time webhooks for Zapier, QuickBooks, ServiceTitan, and external CRMs
+          </p>
+        </div>
+
+        <button
+          onClick={() => seedMutation.mutate()}
+          disabled={seedMutation.isPending}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:brightness-110 text-black font-bold text-xs shadow-lg shadow-emerald-500/20 shrink-0 transition"
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>{seedMutation.isPending ? 'Seeding Records...' : 'Seed Live Demo Records'}</span>
+        </button>
       </div>
+
+      {seedSuccessMsg && (
+        <div className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-800/60 text-xs text-emerald-300 flex items-center gap-3">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+          <span>{seedSuccessMsg} (Populated HVAC, Electrical, and Plumbing records)</span>
+        </div>
+      )}
 
       {/* Workspace Info Card */}
       <div className="glass-panel p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
@@ -106,8 +140,8 @@ export const SettingsPage: React.FC = () => {
             <Building className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-white">Pro HVAC Solutions</h2>
-            <p className="text-xs text-slate-400">Workspace Slug: pro-hvac • Industry: HVAC & Field Mechanical</p>
+            <h2 className="text-base font-bold text-white">Apex Field Services</h2>
+            <p className="text-xs text-slate-400">Workspace Slug: apex-contractors • Industry: Multi-Trade Mechanical</p>
           </div>
         </div>
 

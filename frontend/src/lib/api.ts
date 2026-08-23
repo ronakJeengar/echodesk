@@ -199,3 +199,12 @@ export const fetchAnalytics = async (): Promise<{
   const res = await api.get('/stats/analytics');
   return res.data.data;
 };
+
+export const seedDemoData = async (): Promise<{
+  success: boolean;
+  message: string;
+  seeded: { customers: string[]; jobsCount: number; recordingsCount: number };
+}> => {
+  const res = await api.post('/workspaces/seed-demo');
+  return res.data;
+};
