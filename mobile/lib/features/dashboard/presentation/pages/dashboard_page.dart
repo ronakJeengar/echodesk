@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../providers/dashboard_provider.dart';
+import '../../../recordings/presentation/providers/offline_sync_provider.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -11,6 +12,8 @@ class DashboardPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(dashboardStatsProvider);
+    final pendingOfflineAsync = ref.watch(pendingRecordingsProvider);
+    final isSyncing = ref.watch(offlineSyncProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -34,18 +37,102 @@ class DashboardPage extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded, color: AppColors.textSecondary),
-            onPressed: () => ref.invalidate(dashboardStatsProvider),
+            onPressed: () {
+              ref.invalidate(dashboardStatsProvider);
+              ref.invalidate(pendingRecordingsProvider);
+            },
           ),
           const SizedBox(width: 8),
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () async => ref.refresh(dashboardStatsProvider),
+        onRefresh: () async {
+          ref.invalidate(dashboardStatsProvider);
+          ref.invalidate(pendingRecordingsProvider);
+        },
         color: AppColors.primary,
         backgroundColor: AppColors.surface,
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            // Offline Vault Pending Sync Banner
+            pendingOfflineAsync.when(
+              data: (pendingList) {
+                if (pendingList.isEmpty) return const SizedBox.shrink();
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.warning.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.warning.withValues(alpha: 0.5)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.cloud_off_rounded, color: AppColors.warning, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${pendingList.length} Offline Voice Note${pendingList.length > 1 ? 's' : ''} Cached',
+                              style: AppTypography.caption.copyWith(
+                                color: AppColors.warning,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              'Recorded off-grid. Ready to sync with PostgreSQL CRM.',
+                              style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: isSyncing
+                            ? null
+                            : () async {
+                                final count = await ref
+                                    .read(offlineSyncProvider.notifier)
+                                    .syncPendingRecordings();
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      backgroundColor: AppColors.success,
+                                      content: Text('Synced $count offline voice notes to CRM!'),
+                                    ),
+                                  );
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.warning,
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 0,
+                        ),
+                        child: isSyncing
+                            ? const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                              )
+                            : Text('Sync Now',
+                                style: AppTypography.caption.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black,
+                                )),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+            ),
+
             // Hero Voice Action Card
             Container(
               padding: const EdgeInsets.all(20),
@@ -197,12 +284,16 @@ class DashboardPage extends ConsumerWidget {
 
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 10),
-                      child: _buildRecentNoteTile(
-                        customerName: displayName,
-                        summary: summary,
-                        durationSec: rec.audioDurationSec,
-                        status: rec.status,
-                        cost: cost,
+                      child: InkWell(
+                        onTap: () => context.push('/recordings/${rec.id}'),
+                        borderRadius: BorderRadius.circular(12),
+                        child: _buildRecentNoteTile(
+                          customerName: displayName,
+                          summary: summary,
+                          durationSec: rec.audioDurationSec,
+                          status: rec.status,
+                          cost: cost,
+                        ),
                       ),
                     );
                   }).toList(),

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/customers/presentation/pages/customers_page.dart';
+import '../../features/customers/presentation/pages/customer_detail_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/jobs/presentation/pages/jobs_page.dart';
 import '../../features/recordings/presentation/pages/record_voice_page.dart';
+import '../../features/recordings/presentation/pages/recording_detail_page.dart';
 import '../widgets/app_shell.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -68,6 +70,22 @@ final GoRouter appRouter = GoRouter(
           );
         },
       ),
+    ),
+    GoRoute(
+      path: '/recordings/:id',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final id = state.pathParameters['id'] ?? '';
+        return RecordingDetailPage(recordingId: id);
+      },
+    ),
+    GoRoute(
+      path: '/customers/:id',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final id = state.pathParameters['id'] ?? '';
+        return CustomerDetailPage(customerId: id);
+      },
     ),
   ],
 );

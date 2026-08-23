@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../providers/customers_provider.dart';
+import '../widgets/add_customer_sheet.dart';
 
 class CustomersPage extends ConsumerWidget {
   const CustomersPage({super.key});
@@ -21,6 +23,13 @@ class CustomersPage extends ConsumerWidget {
             onPressed: () => ref.invalidate(customersListProvider),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => AddCustomerSheet.show(context),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.black,
+        icon: const Icon(Icons.person_add_rounded, size: 20),
+        label: Text('New Client', style: AppTypography.button.copyWith(color: Colors.black)),
       ),
       body: Column(
         children: [
@@ -58,15 +67,19 @@ class CustomersPage extends ConsumerWidget {
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final customer = customers[index];
-                      return _buildCustomerTile(
-                        name: customer.name,
-                        company: customer.companyName ?? 'Independent Client',
-                        phone: customer.phone ?? 'No phone listed',
-                        location: customer.city != null
-                            ? '${customer.city}, ${customer.state ?? ''}'
-                            : customer.address ?? 'On-site service',
-                        voiceNotesCount: customer.voiceNotesCount ?? 0,
-                        jobsCount: customer.jobsCount ?? 0,
+                      return InkWell(
+                        onTap: () => context.push('/customers/${customer.id}'),
+                        borderRadius: BorderRadius.circular(12),
+                        child: _buildCustomerTile(
+                          name: customer.name,
+                          company: customer.companyName ?? 'Independent Client',
+                          phone: customer.phone ?? 'No phone listed',
+                          location: customer.city != null
+                              ? '${customer.city}, ${customer.state ?? ''}'
+                              : customer.address ?? 'On-site service',
+                          voiceNotesCount: customer.voiceNotesCount ?? 0,
+                          jobsCount: customer.jobsCount ?? 0,
+                        ),
                       );
                     },
                   ),
