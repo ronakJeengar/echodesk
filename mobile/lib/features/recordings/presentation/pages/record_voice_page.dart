@@ -18,6 +18,15 @@ class _RecordVoicePageState extends ConsumerState<RecordVoicePage>
     with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   final TextEditingController _correctionController = TextEditingController();
+  String _selectedTrade = 'HVAC';
+
+  final List<Map<String, String>> _tradeProfiles = const [
+    {'id': 'HVAC', 'label': 'HVAC', 'icon': '🔥', 'vocab': 'R-410A, capacitors, subcooling, TXV'},
+    {'id': 'Electrical', 'label': 'Electrical', 'icon': '⚡', 'vocab': '200A panels, Romex, GFCI, AFCI'},
+    {'id': 'Plumbing', 'label': 'Plumbing', 'icon': '🔧', 'vocab': 'PRV valve, PEX, tankless, backflow'},
+    {'id': 'Inspection', 'label': 'Inspection', 'icon': '🏠', 'vocab': 'foundation, attic, SEER, crawlspace'},
+    {'id': 'General', 'label': 'General', 'icon': '🔨', 'vocab': 'framing, drywall, punch list, rough-in'},
+  ];
 
   @override
   void initState() {
@@ -47,7 +56,9 @@ class _RecordVoicePageState extends ConsumerState<RecordVoicePage>
     final notifier = ref.read(voiceRecordingProvider.notifier);
 
     if (recordingState.isRecording) {
-      final extractedData = await notifier.stopAndProcessRecording();
+      final extractedData = await notifier.stopAndProcessRecording(
+        jobCategoryOverride: _selectedTrade,
+      );
       if (!mounted) return;
 
       if (extractedData != null) {
@@ -409,6 +420,66 @@ class _RecordVoicePageState extends ConsumerState<RecordVoicePage>
       body: SafeArea(
         child: Column(
           children: [
+            // Trade / Vocabulary Profile Selector
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('TRADE VOCABULARY ENGINE',
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 10,
+                      )),
+                  const SizedBox(height: 6),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: _tradeProfiles.map((tp) {
+                        final isSelected = _selectedTrade == tp['id'];
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: GestureDetector(
+                            onTap: state.isRecording
+                                ? null
+                                : () => setState(() => _selectedTrade = tp['id']!),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppColors.primary.withValues(alpha: 0.15)
+                                    : AppColors.surface,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: isSelected ? AppColors.primary : AppColors.border,
+                                  width: isSelected ? 1.5 : 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(tp['icon']!, style: const TextStyle(fontSize: 13)),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    tp['label']!,
+                                    style: AppTypography.caption.copyWith(
+                                      color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             const Spacer(),
 
             // Status Badge

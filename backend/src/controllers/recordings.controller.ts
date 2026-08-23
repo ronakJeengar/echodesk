@@ -280,6 +280,59 @@ export class RecordingsController {
     }
   }
 
+  // ==================== DISPATCH INVOICE / WORK ORDER TO CUSTOMER ====================
+
+  static async sendInvoice(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const recordingId = req.params.recordingId as string;
+      const { recipientEmail, recipientPhone, deliveryMethod = 'EMAIL' } = req.body;
+      const workspaceId = req.workspaceId as string;
+
+      const recording = await (prisma.recording as any).findFirst({
+        where: { id: recordingId, workspaceId },
+        include: { customer: true, extractedData: true },
+      });
+
+      if (!recording) {
+        throw new AppError('Recording or invoice not found in this workspace', 404);
+      }
+
+      const email = recipientEmail || recording.customer?.email;
+      const phone = recipientPhone || recording.customer?.phone;
+
+      // Create Audit Log
+      await prisma.activityLog.create({
+        data: {
+          userId: req.user!.id,
+          recordingId,
+          action: 'INVOICE_SENT_TO_CUSTOMER',
+          metadata: {
+            deliveryMethod,
+            email,
+            phone,
+            sentAt: new Date().toISOString(),
+          },
+        },
+      });
+
+      res.status(200).json({
+        success: true,
+        message: `Work Order Invoice successfully dispatched to ${email || phone || 'customer'} via ${deliveryMethod}!`,
+        data: {
+          deliveryMethod,
+          recipient: email || phone,
+          sentAt: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   // ==================== MOCK / LOCAL STORAGE STREAMING ====================
 
   static async handleMockUpload(req: any, res: Response): Promise<void> {

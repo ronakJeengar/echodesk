@@ -81,7 +81,7 @@ webhookRouter.post('/test-ping', async (req: AuthenticatedRequest, res: Response
  */
 webhookRouter.delete('/:id', async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const workspaceId = req.workspaceId!;
-  const { id } = req.params;
+  const id = req.params.id as string;
 
   await webhookService.deleteSubscription(id, workspaceId);
 

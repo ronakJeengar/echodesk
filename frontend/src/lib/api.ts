@@ -171,3 +171,15 @@ export const testPingWebhook = async (params: {
   const res = await api.post('/workspaces/webhooks/test-ping', params);
   return res.data.data;
 };
+
+export const sendInvoiceToCustomer = async (
+  recordingId: string,
+  params: {
+    recipientEmail?: string;
+    recipientPhone?: string;
+    deliveryMethod: 'EMAIL' | 'SMS' | 'BOTH';
+  }
+): Promise<{ success: boolean; message: string }> => {
+  const res = await api.post(`/recordings/${recordingId}/send-invoice`, params);
+  return res.data;
+};

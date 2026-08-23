@@ -82,4 +82,20 @@ class RecordingsRepository {
       data: {'promptAdjustment': promptAdjustment},
     );
   }
+
+  Future<ApiResponse<Map<String, dynamic>>> sendInvoice({
+    required String recordingId,
+    String? recipientEmail,
+    String? recipientPhone,
+    String deliveryMethod = 'EMAIL',
+  }) async {
+    return await _apiClient.post(
+      '${ApiEndpoints.recordingDetail}/$recordingId/send-invoice',
+      data: {
+        if (recipientEmail != null) 'recipientEmail': recipientEmail,
+        if (recipientPhone != null) 'recipientPhone': recipientPhone,
+        'deliveryMethod': deliveryMethod,
+      },
+    );
+  }
 }

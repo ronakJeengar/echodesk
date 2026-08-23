@@ -36,6 +36,7 @@ export interface ExtractedData {
   customerInfo?: {
     name?: string;
     companyName?: string;
+    email?: string;
     phone?: string;
     address?: string;
   };
@@ -67,6 +68,7 @@ export interface Recording {
     id: string;
     name: string;
     companyName?: string;
+    email?: string;
     phone?: string;
     address?: string;
   };

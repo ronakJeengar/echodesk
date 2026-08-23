@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../domain/models/recording_model.dart';
 import '../providers/recording_provider.dart';
+import '../widgets/send_invoice_modal.dart';
 
 final recordingDetailFutureProvider =
     FutureProvider.autoDispose.family<RecordingModel?, String>((ref, recordingId) async {
@@ -440,7 +441,36 @@ class _RecordingDetailPageState extends ConsumerState<RecordingDetailPage> {
 
                 const SizedBox(height: 20),
 
-                // Actions: Generate PDF & Re-Extract
+                // Primary Action: Dispatch to Customer via SMS/Email
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      SendInvoiceModal.show(
+                        context,
+                        recordingId: recording.id,
+                        initialEmail: data.customerInfo?['email'] as String?,
+                        initialPhone: data.customerInfo?['phone'] as String?,
+                        clientName: data.customerInfo?['name'] as String?,
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    icon: const Icon(Icons.send_rounded, size: 18, color: Colors.black),
+                    label: Text(
+                      'Send Invoice to Customer (Email/SMS)',
+                      style: AppTypography.button.copyWith(color: Colors.black),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // Secondary Actions: Generate PDF & Re-Extract
                 Row(
                   children: [
                     Expanded(
@@ -457,23 +487,22 @@ class _RecordingDetailPageState extends ConsumerState<RecordingDetailPage> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: ElevatedButton.icon(
+                      child: OutlinedButton.icon(
                         onPressed: () async {
                           await WorkOrderPdfService.previewAndPrint(
                             context: context,
                             recording: recording,
                           );
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.black,
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: AppColors.primary),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        icon: const Icon(Icons.picture_as_pdf_rounded, size: 18, color: Colors.black),
+                        icon: const Icon(Icons.picture_as_pdf_rounded, size: 18, color: AppColors.primary),
                         label: Text(
                           'Work Order PDF',
-                          style: AppTypography.button.copyWith(color: Colors.black),
+                          style: AppTypography.button.copyWith(color: AppColors.primary),
                         ),
                       ),
                     ),

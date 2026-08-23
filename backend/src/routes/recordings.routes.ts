@@ -40,6 +40,13 @@ recordingsRouter.post(
   RecordingsController.reExtract
 );
 
+// Dispatch Work Order Invoice to Customer via Email/SMS
+recordingsRouter.post(
+  '/:recordingId/send-invoice',
+  authenticate,
+  RecordingsController.sendInvoice
+);
+
 // Local / mock upload and stream handlers
 recordingsRouter.put('/upload-mock/:key', RecordingsController.handleMockUpload);
 recordingsRouter.get('/audio-stream/:key', RecordingsController.handleMockAudioStream);

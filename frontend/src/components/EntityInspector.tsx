@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ExtractedData, Recording } from '../types';
 import { printWorkOrderPdf } from '../lib/pdf';
+import { SendInvoiceModal } from './SendInvoiceModal';
 import {
   User,
   Wrench,
@@ -10,7 +11,8 @@ import {
   Sparkles,
   Edit3,
   Printer,
-  FileText
+  FileText,
+  Send
 } from 'lucide-react';
 
 interface EntityInspectorProps {
@@ -29,6 +31,7 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
   isLoading,
 }) => {
   const [isAdjustOpen, setIsAdjustOpen] = useState(false);
+  const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [promptText, setPromptText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -232,25 +235,57 @@ export const EntityInspector: React.FC<EntityInspectorProps> = ({
         </div>
       )}
 
-      {/* Actions: PDF Export & One-Click AI Correction Buttons */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+      {/* Actions: Send to Customer, PDF Export & AI Correction */}
+      <div className="space-y-2.5 pt-2">
         <button
-          onClick={handlePrintPdf}
-          className="flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-semibold text-sm border border-emerald-500/30 transition"
+          onClick={() => setIsSendModalOpen(true)}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm shadow-lg shadow-emerald-500/20 transition"
         >
-          <Printer className="w-4 h-4" />
-          Print / Save PDF Work Order
+          <Send className="w-4 h-4" />
+          Send Invoice to Customer (Email / SMS)
         </button>
 
-        <button
-          onClick={() => setIsAdjustOpen(true)}
-          disabled={isLoading}
-          className="flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-sm border border-slate-700 transition"
-        >
-          <Edit3 className="w-4 h-4 text-emerald-400" />
-          Adjust Prompt (AI Edit)
-        </button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <button
+            onClick={handlePrintPdf}
+            className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-semibold text-xs border border-emerald-500/30 transition"
+          >
+            <Printer className="w-4 h-4" />
+            Print Work Order PDF
+          </button>
+
+          <button
+            onClick={() => setIsAdjustOpen(true)}
+            disabled={isLoading}
+            className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition"
+          >
+            <Edit3 className="w-4 h-4 text-emerald-400" />
+            AI Correction Prompt
+          </button>
+        </div>
       </div>
+
+      {/* Send Invoice Modal */}
+      <SendInvoiceModal
+        recording={
+          recording || {
+            id: recordingId,
+            workspaceId: '',
+            audioUrl: '',
+            audioDurationSec: 45.0,
+            audioFormat: 'm4a',
+            fileSizeBytes: 1048576,
+            status: 'COMPLETED',
+            wordTimestamps: [],
+            extractedData,
+            recordedAt: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }
+        }
+        isOpen={isSendModalOpen}
+        onClose={() => setIsSendModalOpen(false)}
+      />
 
       {/* Prompt Adjustment Modal */}
       {isAdjustOpen && (
